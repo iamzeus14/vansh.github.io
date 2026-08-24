@@ -1,0 +1,239 @@
+const root = document.documentElement;
+let savedTheme;
+try {
+  savedTheme = localStorage.getItem('portfolio-theme');
+} catch {
+  savedTheme = null;
+}
+if (savedTheme) root.dataset.theme = savedTheme;
+
+const initAmbientCollision = () => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const stage = document.createElement('div');
+  stage.className = 'ambient-stage';
+  stage.setAttribute('aria-hidden', 'true');
+  document.body.prepend(stage);
+
+  const orbs = [
+    { className: 'ambient-orb--primary', size: 420, x: .86, y: .23, vx: -24, vy: 20, maxSpeed: 42, nextImpulse: 0 },
+    { className: 'ambient-orb--secondary', size: 300, x: .17, y: .78, vx: 22, vy: -18, maxSpeed: 42, nextImpulse: 0 },
+    { className: 'ambient-orb--tertiary', size: 190, x: .52, y: .45, vx: -16, vy: -22, maxSpeed: 42, nextImpulse: 0 },
+    { className: 'ambient-orb--accent', size: 120, x: .38, y: .16, vx: 28, vy: 14, maxSpeed: 42, nextImpulse: 0 }
+  ].map(config => {
+    const element = document.createElement('div');
+    element.className = `ambient-orb ${config.className}`;
+    element.setAttribute('aria-hidden', 'true');
+    stage.appendChild(element);
+    return { ...config, element };
+  });
+
+  const bounds = () => ({ width: window.innerWidth, height: window.innerHeight });
+  const resize = () => {
+    const { width, height } = bounds();
+    orbs.forEach(orb => {
+      orb.x = Math.min(width, Math.max(0, width * orb.xRatio));
+      orb.y = Math.min(height, Math.max(0, height * orb.yRatio));
+    });
+  };
+
+  orbs.forEach(orb => {
+    orb.xRatio = orb.x;
+    orb.yRatio = orb.y;
+  });
+  resize();
+
+  let previousTime;
+  const animate = time => {
+    if (!previousTime) previousTime = time;
+    const delta = Math.min((time - previousTime) / 1000, .04);
+    previousTime = time;
+    const { width, height } = bounds();
+
+    orbs.forEach(orb => {
+      const radius = orb.size / 2;
+      if (time >= orb.nextImpulse) {
+        const angle = Math.random() * Math.PI * 2;
+        const impulse = 5 + Math.random() * 8;
+        orb.vx += Math.cos(angle) * impulse;
+        orb.vy += Math.sin(angle) * impulse;
+        orb.nextImpulse = time + 2600 + Math.random() * 4200;
+      }
+      orb.x += orb.vx * delta;
+      orb.y += orb.vy * delta;
+        const speed = Math.hypot(orb.vx, orb.vy);
+        if (speed > orb.maxSpeed) {
+          orb.vx = orb.vx / speed * orb.maxSpeed;
+          orb.vy = orb.vy / speed * orb.maxSpeed;
+        }
+      if (orb.x < 0 || orb.x > width) {
+        orb.x = Math.min(width, Math.max(0, orb.x));
+        orb.vx *= -1;
+      }
+      if (orb.y < 0 || orb.y > height) {
+        orb.y = Math.min(height, Math.max(0, orb.y));
+        orb.vy *= -1;
+      }
+    });
+
+    orbs.forEach((first, firstIndex) => orbs.slice(firstIndex + 1).forEach(second => {
+      const dx = second.x - first.x;
+      const dy = second.y - first.y;
+      const distance = Math.hypot(dx, dy) || 1;
+      const minimumDistance = (first.size + second.size) * .42;
+      const relativeVelocity = (second.vx - first.vx) * dx + (second.vy - first.vy) * dy;
+      if (distance >= minimumDistance || relativeVelocity >= 0) return;
+      const normalX = dx / distance;
+      const normalY = dy / distance;
+      const impulse = relativeVelocity * .92;
+      first.vx += impulse * normalX;
+      first.vy += impulse * normalY;
+      second.vx -= impulse * normalX;
+      second.vy -= impulse * normalY;
+      const separation = (minimumDistance - distance) / 2;
+      first.x -= normalX * separation;
+      first.y -= normalY * separation;
+      second.x += normalX * separation;
+      second.y += normalY * separation;
+    }));
+
+    orbs.forEach(orb => {
+      orb.element.style.transform = `translate3d(${orb.x}px, ${orb.y}px, 0) translate3d(-50%, -50%, 0)`;
+    });
+    window.requestAnimationFrame(animate);
+  };
+
+  window.addEventListener('resize', resize, { passive: true });
+  window.requestAnimationFrame(animate);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initAmbientCollision();
+  const preloader = document.querySelector('.preloader');
+  window.setTimeout(() => preloader?.classList.add('done'), 450);
+
+  const menu = document.querySelector('.menu-btn');
+  const nav = document.querySelector('.nav-links');
+  menu?.addEventListener('click', () => {
+    if (!nav) return;
+    const open = nav.classList.toggle('open');
+    menu.setAttribute('aria-expanded', String(open));
+    menu.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    menu.textContent = open ? '×' : '☰';
+  });
+
+  document.querySelector('.theme-toggle')?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('portfolio-theme', next);
+    } catch {
+    }
+  });
+
+  const currentPage = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    if (link.getAttribute('href') === currentPage) link.classList.add('active');
+  });
+
+  const revealElements = document.querySelectorAll('.reveal');
+  document.querySelectorAll('.progress i').forEach((bar, index) => {
+    bar.style.setProperty('--bar-delay', `${index * 120}ms`);
+  });
+  const showReveal = element => {
+    element.classList.add('visible');
+    element.querySelectorAll('.progress i').forEach(bar => { bar.style.width = bar.dataset.level; });
+  };
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          showReveal(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .12 });
+    revealElements.forEach(el => observer.observe(el));
+  } else {
+    revealElements.forEach(showReveal);
+  }
+
+  document.querySelectorAll('.btn').forEach(button => button.addEventListener('click', event => {
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const size = Math.max(button.clientWidth, button.clientHeight);
+    ripple.style.width = ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.offsetX - size / 2}px`;
+    ripple.style.top = `${event.offsetY - size / 2}px`;
+    button.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  }));
+
+  document.querySelectorAll('.filter').forEach(filter => filter.addEventListener('click', () => {
+    document.querySelectorAll('.filter').forEach(item => {
+      item.classList.remove('active');
+      item.setAttribute('aria-pressed', 'false');
+    });
+    filter.classList.add('active');
+    filter.setAttribute('aria-pressed', 'true');
+    const value = filter.dataset.filter;
+    document.querySelectorAll('.project-card').forEach(card => {
+      const tags = card.dataset.tags?.split(/\s+/) || [];
+      card.hidden = value !== 'all' && !tags.includes(value);
+    });
+  }));
+
+  const lightbox = document.querySelector('.lightbox');
+  document.querySelectorAll('.gallery-item').forEach(item => item.addEventListener('click', () => {
+    if (!lightbox) return;
+    lightbox.querySelector('.gallery-art').className = `gallery-art ${item.dataset.art}`;
+    lightbox.querySelector('h2').textContent = item.dataset.title;
+    lightbox.classList.add('open');
+    lightbox.querySelector('.lightbox-close').focus();
+  }));
+  document.querySelector('.lightbox-close')?.addEventListener('click', () => lightbox.classList.remove('open'));
+  lightbox?.addEventListener('click', event => { if (event.target === lightbox) lightbox.classList.remove('open'); });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      lightbox?.classList.remove('open');
+      nav?.classList.remove('open');
+      menu?.setAttribute('aria-expanded', 'false');
+      menu?.setAttribute('aria-label', 'Open menu');
+      if (menu) menu.textContent = '☰';
+    }
+  });
+
+  document.querySelector('.contact-form')?.addEventListener('submit', event => {
+    const form = event.currentTarget;
+    const message = form.querySelector('.form-message');
+    const issueField = form.querySelector('#message');
+    if (!form.checkValidity()) {
+      event.preventDefault();
+      message.textContent = 'Please complete each field before sending.';
+      message.className = 'form-message error';
+      form.reportValidity();
+      return;
+    }
+    if (!issueField.value.trim()) {
+      event.preventDefault();
+      message.textContent = 'Please describe the issue before sending.';
+      message.className = 'form-message error';
+      issueField.focus();
+      return;
+    }
+    event.preventDefault();
+    const formData = new FormData(form);
+    const name = String(formData.get('name') || '').trim();
+    const email = String(formData.get('email') || '').trim();
+    const issue = String(formData.get('message') || '').trim();
+    const subject = `Inquiry from ${name}`;
+    const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${issue}`;
+    window.location.href = `mailto:iamdrzeus14@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    message.textContent = 'Your email app is opening with the message ready to send.';
+    message.className = 'form-message success';
+  });
+
+  document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
+});
+
+console.log('%cHello, fellow builder. %cTry the theme toggle, then inspect the source.', 'color:#e77d5a;font-weight:bold', 'color:#a8b4ac');
