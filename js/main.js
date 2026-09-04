@@ -8,7 +8,7 @@ try {
 if (savedTheme) root.dataset.theme = savedTheme;
 
 const initAmbientCollision = () => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 1024px), (pointer: coarse)').matches) return;
 
   const stage = document.createElement('div');
   stage.className = 'ambient-stage';

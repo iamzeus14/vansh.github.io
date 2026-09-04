@@ -283,4 +283,7 @@ h1 span { color: var(--primary); }
   .reveal { transform: translate3d(0, 16px, 0); filter: none; transition: opacity .45s var(--ease), transform .45s var(--ease); will-change: opacity, transform; transition-delay: 0ms; }
   .reveal.visible { filter: none; }
 }
+@media (max-width: 1024px), (pointer: coarse) {
+  .ambient-stage, .hero::before, .hero::after { display: none; animation: none; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
