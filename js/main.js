@@ -107,8 +107,155 @@ const initAmbientCollision = () => {
   window.requestAnimationFrame(animate);
 };
 
+const initCursorCat = () => {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const cat = document.createElement('div');
+  cat.className = 'cursor-cat';
+  cat.setAttribute('aria-hidden', 'true');
+  cat.innerHTML = '<span class="cat-sprite"></span>';
+  document.body.appendChild(cat);
+  const sprite = cat.querySelector('.cat-sprite');
+  const movementFrames = {
+    right: [[3, 0], [3, 1]], downright: [[5, 1], [5, 2]], down: [[6, 3], [7, 2]], downleft: [[5, 3], [6, 1]],
+    left: [[4, 2], [4, 3]], upleft: [[1, 0], [1, 1]], up: [[1, 2], [1, 3]], upright: [[0, 2], [0, 3]]
+  };
+  const idleFrames = { scratch: [[5, 0], [6, 0]], yawn: [[3, 2], [3, 3]] };
+
+  const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
+  const setIdleBehavior = () => {
+    window.clearTimeout(state.idleTimer);
+    state.idleTimer = window.setTimeout(() => {
+      const remainingDistance = Math.hypot(state.targetX - state.x, state.targetY - state.y);
+      if (remainingDistance > 42 || Math.hypot(state.vx, state.vy) > 12) {
+        setIdleBehavior();
+        return;
+      }
+      state.targetX = state.x;
+      state.targetY = state.y;
+      state.vx = 0;
+      state.vy = 0;
+      state.actionFrames = Math.random() > .45 ? idleFrames.scratch : idleFrames.yawn;
+      state.actionUntil = performance.now() + 900;
+      cat.classList.add('is-curious');
+      window.setTimeout(() => {
+        state.actionFrames = null;
+        state.actionUntil = 0;
+        cat.classList.remove('is-curious');
+        if (state.active && performance.now() - state.lastPointerTime > 500) setIdleBehavior();
+      }, 900);
+    }, 620 + Math.random() * 480);
+  };
+
+  window.addEventListener('pointermove', event => {
+    const now = performance.now();
+    if (!state.active) {
+      state.pointerX = event.clientX;
+      state.pointerY = event.clientY;
+      state.lastPointerTime = now;
+      state.targetX = event.clientX - 32;
+      state.targetY = event.clientY - 32;
+      state.active = true;
+      cat.classList.add('is-visible');
+      setIdleBehavior();
+      return;
+    }
+    const elapsed = Math.max(now - state.lastPointerTime, 16);
+    const movementX = event.clientX - state.pointerX;
+    const movementY = event.clientY - state.pointerY;
+    const pointerVelocityX = movementX / elapsed * 16;
+    const pointerVelocityY = movementY / elapsed * 16;
+    const pointerSpeed = Math.hypot(pointerVelocityX, pointerVelocityY);
+    const followDistance = Math.min(18, 4 + pointerSpeed * .25);
+    const directionX = pointerSpeed ? pointerVelocityX / pointerSpeed : 0;
+    const directionY = pointerSpeed ? pointerVelocityY / pointerSpeed : 0;
+    state.pointerX = event.clientX;
+    state.pointerY = event.clientY;
+    state.lastPointerTime = now;
+    state.actionFrames = null;
+    state.actionUntil = 0;
+    state.targetX = event.clientX - 32 - directionX * followDistance;
+    state.targetY = event.clientY - 32 - directionY * followDistance;
+    if (Math.hypot(event.clientX - state.x, event.clientY - state.y) < 105) state.playUntil = now + 720;
+    state.active = true;
+    cat.classList.add('is-visible');
+    setIdleBehavior();
+  }, { passive: true });
+
+  let previousTime;
+  const animate = time => {
+    if (!previousTime) previousTime = time;
+    const delta = Math.min((time - previousTime) / 1000, .033);
+    previousTime = time;
+    if (state.active) {
+      const pointerDistance = Math.hypot(state.pointerX - state.x, state.pointerY - state.y) || 1;
+      if (time < state.playUntil) {
+        const awayX = (state.x - state.pointerX) / pointerDistance;
+        const awayY = (state.y - state.pointerY) / pointerDistance;
+        state.targetX = state.pointerX - 32 + awayX * 76;
+        state.targetY = state.pointerY - 32 + awayY * 76;
+        cat.classList.add('is-playing');
+      } else {
+        cat.classList.remove('is-playing');
+      }
+      const distance = Math.hypot(state.targetX - state.x, state.targetY - state.y);
+      const stiffness = distance > 180 ? 68 : 74;
+      const damping = 16;
+      let accelerationX = (state.targetX - state.x) * stiffness;
+      let accelerationY = (state.targetY - state.y) * stiffness;
+      const acceleration = Math.hypot(accelerationX, accelerationY);
+      const maximumAcceleration = 2600;
+      if (acceleration > maximumAcceleration) {
+        accelerationX = accelerationX / acceleration * maximumAcceleration;
+        accelerationY = accelerationY / acceleration * maximumAcceleration;
+      }
+      state.vx += accelerationX * delta;
+      state.vy += accelerationY * delta;
+      state.vx *= Math.exp(-damping * delta);
+      state.vy *= Math.exp(-damping * delta);
+      const maximumSpeed = state.playUntil > time ? 240 : 300;
+      const velocity = Math.hypot(state.vx, state.vy);
+      if (velocity > maximumSpeed) {
+        state.vx = state.vx / velocity * maximumSpeed;
+        state.vy = state.vy / velocity * maximumSpeed;
+      }
+      state.x += state.vx * delta;
+      state.y += state.vy * delta;
+      const travelAngle = Math.atan2(state.vy, state.vx) * 180 / Math.PI;
+      const lean = Math.max(-9, Math.min(9, state.vx * .08));
+      const lookX = Math.max(-3, Math.min(3, (state.pointerX - state.x) * .025));
+      const speed = Math.hypot(state.vx, state.vy);
+      const directionNames = ['right', 'downright', 'down', 'downleft', 'left', 'upleft', 'up', 'upright'];
+      const directionIndex = Math.round((travelAngle + 360) % 360 / 45) % 8;
+      if (speed > 3) state.spriteDirection = directionNames[directionIndex];
+      const isActing = state.actionFrames && time < state.actionUntil;
+      const frames = isActing ? state.actionFrames : speed > 3 ? movementFrames[state.spriteDirection] : [[7, 3]];
+      if (speed > 3 || state.actionFrames) {
+        if (time - state.frameTime > (state.actionFrames ? 190 : Math.max(115, 230 - speed * 4))) {
+          state.frameIndex = (state.frameIndex + 1) % frames.length;
+          state.frameTime = time;
+        }
+      } else {
+        state.frameIndex = 0;
+      }
+      const [spriteColumn, spriteRow] = frames[state.frameIndex];
+      sprite.style.backgroundPosition = `${-spriteColumn * 64}px ${-spriteRow * 64}px`;
+      cat.style.transform = `translate3d(${state.x}px, ${state.y}px, 0) rotate(${lean}deg)`;
+      cat.style.setProperty('--look-x', `${lookX}px`);
+      cat.style.setProperty('--travel-angle', `${travelAngle}deg`);
+      cat.style.setProperty('--bounce', `${Math.min(3, speed * .018)}px`);
+      cat.style.setProperty('--walk-speed', `${Math.max(.16, Math.min(.34, .34 - speed * .004))}s`);
+      
+      cat.classList.toggle('is-walking', speed > 12);
+    }
+    window.requestAnimationFrame(animate);
+  };
+  window.requestAnimationFrame(animate);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initAmbientCollision();
+  initCursorCat();
   const preloader = document.querySelector('.preloader');
   window.setTimeout(() => preloader?.classList.add('done'), 450);
 
