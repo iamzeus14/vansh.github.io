@@ -271,18 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
     element.classList.add('visible');
     element.querySelectorAll('.progress i').forEach(bar => { bar.style.width = bar.dataset.level; });
   };
-  const hideReveal = element => {
-    element.classList.remove('visible');
-    element.querySelectorAll('.progress i').forEach(bar => { bar.style.width = '0'; });
-  };
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        const isInRevealZone = entry.isIntersecting && entry.intersectionRatio >= .12;
-        if (isInRevealZone) {
+        if (entry.isIntersecting && entry.intersectionRatio >= .12) {
           showReveal(entry.target);
-        } else {
-          hideReveal(entry.target);
+          observer.unobserve(entry.target);
         }
       });
     }, { threshold: [0, .12] });

@@ -280,5 +280,7 @@ h1 span { color: var(--primary); }
   .gallery-item.tall { grid-row: span 2; }
   .contact-intro h2 { font-size: 38px; }
   .footer-inner > * + * { margin-top: 8px; }
+  .reveal { transform: translate3d(0, 16px, 0); filter: none; transition: opacity .45s var(--ease), transform .45s var(--ease); will-change: opacity, transform; transition-delay: 0ms; }
+  .reveal.visible { filter: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
