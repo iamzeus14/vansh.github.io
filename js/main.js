@@ -55,22 +55,26 @@ const initAmbientCollision = () => {
       if (time >= orb.nextImpulse) {
         const angle = Math.random() * Math.PI * 2;
         const impulse = 5 + Math.random() * 8;
-        orb.vx += Math.cos(angle) * impulse;
-        orb.vy += Math.sin(angle) * impulse;
+        orb.vx += Math.cos(angle) * impulse * delta;
+        orb.vy += Math.sin(angle) * impulse * delta;
         orb.nextImpulse = time + 2600 + Math.random() * 4200;
+      }
+      const speed = Math.hypot(orb.vx, orb.vy);
+      if (speed > orb.maxSpeed) {
+        orb.vx = orb.vx / speed * orb.maxSpeed;
+        orb.vy = orb.vy / speed * orb.maxSpeed;
       }
       orb.x += orb.vx * delta;
       orb.y += orb.vy * delta;
-        const speed = Math.hypot(orb.vx, orb.vy);
-        if (speed > orb.maxSpeed) {
-          orb.vx = orb.vx / speed * orb.maxSpeed;
-          orb.vy = orb.vy / speed * orb.maxSpeed;
-        }
-      if (orb.x < 0 || orb.x > width) {
-          orb.x = (orb.x + width) % width;
+      if (orb.x < -radius) {
+        orb.x = width + radius;
+      } else if (orb.x > width + radius) {
+        orb.x = -radius;
       }
-      if (orb.y < 0 || orb.y > height) {
-          orb.y = (orb.y + height) % height;
+      if (orb.y < -radius) {
+        orb.y = height + radius;
+      } else if (orb.y > height + radius) {
+        orb.y = -radius;
       }
     });
 
@@ -99,7 +103,14 @@ const initCursorCat = () => {
   };
   const idleFrames = { scratch: [[5, 0], [6, 0]], yawn: [[3, 2], [3, 3]] };
 
-  const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
+  const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
+  const clearIdleAction = () => {
+    window.clearTimeout(state.idleTimer);
+    window.clearTimeout(state.actionTimer);
+    state.actionFrames = null;
+    state.actionUntil = 0;
+    cat.classList.remove('is-curious');
+  };
   const setIdleBehavior = () => {
     window.clearTimeout(state.idleTimer);
     state.idleTimer = window.setTimeout(() => {
@@ -115,7 +126,7 @@ const initCursorCat = () => {
       state.actionFrames = Math.random() > .45 ? idleFrames.scratch : idleFrames.yawn;
       state.actionUntil = performance.now() + 900;
       cat.classList.add('is-curious');
-      window.setTimeout(() => {
+      state.actionTimer = window.setTimeout(() => {
         state.actionFrames = null;
         state.actionUntil = 0;
         cat.classList.remove('is-curious');
@@ -137,6 +148,7 @@ const initCursorCat = () => {
       setIdleBehavior();
       return;
     }
+    clearIdleAction();
     const elapsed = Math.max(now - state.lastPointerTime, 16);
     const movementX = event.clientX - state.pointerX;
     const movementY = event.clientY - state.pointerY;
@@ -227,6 +239,14 @@ const initCursorCat = () => {
     }
     window.requestAnimationFrame(animate);
   };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      previousTime = undefined;
+      state.frameTime = performance.now();
+      state.vx = 0;
+      state.vy = 0;
+    }
+  });
   window.requestAnimationFrame(animate);
 };
 
