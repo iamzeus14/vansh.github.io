@@ -162,14 +162,22 @@ h1 span { color: var(--primary); }
 .project-card { overflow: hidden; }
 .project-art { height: clamp(180px, 28vw, 300px); padding: 20px; display: flex; align-items: end; background: var(--surface-2); position: relative; overflow: hidden; }
 .project-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--surface) 72%, transparent), transparent 70%); pointer-events: none; }
-.project-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.project-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: var(--surface-2); }
+.project-card:nth-of-type(1) .project-art { background: #dfe7d9; }
+.project-card:nth-of-type(1) .project-image { object-fit: cover; object-position: 50% 48%; transform: scale(1.08); filter: saturate(1.08) contrast(1.04) brightness(.98); }
+.project-card:nth-of-type(2) .project-art { background: #d9d2c2; }
+.project-card:nth-of-type(2) .project-image { object-fit: cover; object-position: 52% 38%; transform: scale(1.06); filter: saturate(.9) contrast(1.06) brightness(.96); }
+.project-card:nth-of-type(3) .project-art { background: #0f1b2a; }
+.project-card:nth-of-type(3) .project-image { object-fit: cover; object-position: 50% 42%; transform: scale(1.08); filter: saturate(1.1) contrast(1.08) brightness(.96); }
 .project-art::before { content: ''; position: absolute; width: 180px; height: 180px; right: -20px; top: -40px; border-radius: 50%; background: var(--primary); opacity: .18; transition: transform .5s var(--ease); }
 .project-card:hover .project-art::before { transform: scale(1.3); }
 .project-number { position: relative; z-index: 2; font-size: 48px; font-weight: 700; letter-spacing: -.08em; color: var(--primary); }
 .project-info { padding: 24px; font-size: 17px; }
-.project-info .card-label { display: block; margin-bottom: 8px; color: var(--primary); font-size: 13px; font-weight: 700; letter-spacing: .12em; }
+.project-info .card-label { display: block; margin-bottom: 8px; color: var(--primary); font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .project-info h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; color: var(--on-surface); font-size: clamp(36px, 4vw, 48px); font-weight: 700; line-height: 1.05; }
 .project-info h3 .material-icons { flex: 0 0 auto; color: var(--primary); font-size: .65em; }
+.project-name-accent { color: var(--primary); }
+.project-title-base { color: var(--on-surface); }
 .project-info p { color: var(--on-surface); font-size: 17px; font-weight: 500; line-height: 1.55; min-height: 68px; }
 .project-info strong { color: var(--primary); font-weight: 700; }
 .project-info .tag { font-size: 12px; font-weight: 700; }
