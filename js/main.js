@@ -284,9 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const revealElements = document.querySelectorAll('.reveal');
-  const projectCards = document.querySelectorAll('.project-card.reveal');
-  projectCards.forEach((card, index) => {
-    card.style.setProperty('--reveal-delay', `${index * 180}ms`);
+  revealElements.forEach((element, index) => {
+    element.style.setProperty('--reveal-delay', `${index * 120}ms`);
   });
   document.querySelectorAll('.progress i').forEach((bar, index) => {
     bar.style.setProperty('--bar-delay', `${index * 120}ms`);
@@ -302,13 +301,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
+        const isInRevealZone = entry.isIntersecting && entry.intersectionRatio >= .12;
+        if (isInRevealZone) {
           showReveal(entry.target);
         } else {
           hideReveal(entry.target);
         }
       });
-    }, { threshold: .12 });
+    }, { threshold: [0, .12] });
     revealElements.forEach(el => observer.observe(el));
   } else {
     revealElements.forEach(showReveal);
