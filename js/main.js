@@ -67,35 +67,12 @@ const initAmbientCollision = () => {
           orb.vy = orb.vy / speed * orb.maxSpeed;
         }
       if (orb.x < 0 || orb.x > width) {
-        orb.x = Math.min(width, Math.max(0, orb.x));
-        orb.vx *= -1;
+          orb.x = (orb.x + width) % width;
       }
       if (orb.y < 0 || orb.y > height) {
-        orb.y = Math.min(height, Math.max(0, orb.y));
-        orb.vy *= -1;
+          orb.y = (orb.y + height) % height;
       }
     });
-
-    orbs.forEach((first, firstIndex) => orbs.slice(firstIndex + 1).forEach(second => {
-      const dx = second.x - first.x;
-      const dy = second.y - first.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const minimumDistance = (first.size + second.size) * .42;
-      const relativeVelocity = (second.vx - first.vx) * dx + (second.vy - first.vy) * dy;
-      if (distance >= minimumDistance || relativeVelocity >= 0) return;
-      const normalX = dx / distance;
-      const normalY = dy / distance;
-      const impulse = relativeVelocity * .92;
-      first.vx += impulse * normalX;
-      first.vy += impulse * normalY;
-      second.vx -= impulse * normalX;
-      second.vy -= impulse * normalY;
-      const separation = (minimumDistance - distance) / 2;
-      first.x -= normalX * separation;
-      first.y -= normalY * separation;
-      second.x += normalX * separation;
-      second.y += normalY * separation;
-    }));
 
     orbs.forEach(orb => {
       orb.element.style.transform = `translate3d(${orb.x}px, ${orb.y}px, 0) translate3d(-50%, -50%, 0)`;
