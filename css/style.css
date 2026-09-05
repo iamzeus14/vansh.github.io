@@ -53,9 +53,11 @@ button { cursor: pointer; }
 img { max-width: 100%; display: block; }
 .container { width: min(calc(100% - 40px), var(--max)); margin: 0 auto; }
 .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); background: color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter: blur(18px); transition: background-color .45s var(--ease), border-color .45s var(--ease); }
-.nav { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.04em; font-size: 19px; }
+.nav { min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.logo { position: relative; display: inline-flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.04em; font-size: 19px; }
 .logo-image { width: 30px; height: 30px; border: 2px solid var(--primary); border-radius: 50%; object-fit: cover; object-position: center top; }
+.logo-name { display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
+.logo-cat { position: absolute; top: calc(100% - 62px); left: calc(100% + 8px); z-index: 30; width: 90px; height: auto; object-fit: contain; object-position: center; }
 .nav-links { display: flex; align-items: center; gap: 6px; }
 .nav-links a { position: relative; padding: 10px 14px; color: var(--muted); font-size: 14px; transition: color .25s; }
 .nav-links a::after { content: ''; position: absolute; bottom: 3px; left: 14px; right: 14px; height: 2px; background: var(--primary); transform: scaleX(0); transform-origin: left; transition: transform .3s var(--ease); }
@@ -264,7 +266,7 @@ h1 span { color: var(--primary); }
   .cursor-cat { scale: .8; transform-origin: top left; }
   .menu-btn { display: grid; }
   .icon-btn:focus-visible, .menu-btn:focus-visible { outline: 0; box-shadow: 0 0 0 3px var(--tertiary); }
-  .nav-links { position: absolute; top: 76px; left: 14px; right: 14px; display: grid; padding: 10px; background: var(--surface); border: 1px solid var(--outline); border-radius: 18px; box-shadow: var(--shadow-2); opacity: 0; transform: translateY(-10px); pointer-events: none; transition: .25s var(--ease); }
+  .nav-links { position: absolute; top: 86px; left: 14px; right: 14px; display: grid; padding: 10px; background: var(--surface); border: 1px solid var(--outline); border-radius: 18px; box-shadow: var(--shadow-2); opacity: 0; transform: translateY(-10px); pointer-events: none; transition: .25s var(--ease); }
   .nav-links.open { opacity: 1; transform: none; pointer-events: auto; }
   .nav-links a { padding: 13px; }
   .nav-links a::after { display: none; }
