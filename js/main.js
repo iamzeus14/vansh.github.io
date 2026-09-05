@@ -114,6 +114,7 @@ const initCursorCat = () => {
   };
 
   const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
+  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
   const clearIdleAction = () => {
     window.clearTimeout(state.idleTimer);
     window.clearTimeout(state.actionTimer);
@@ -144,6 +145,15 @@ const initCursorCat = () => {
       }, 900);
     }, 620 + Math.random() * 480);
   };
+
+  if (isTouchDevice) {
+    state.pointerX = state.x + 32;
+    state.pointerY = state.y + 32;
+    state.active = true;
+    state.lastPointerTime = performance.now();
+    cat.classList.add('is-visible');
+    setIdleBehavior();
+  }
 
   window.addEventListener('pointermove', event => {
     const now = performance.now();
