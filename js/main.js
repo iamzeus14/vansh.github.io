@@ -239,7 +239,9 @@ const initCursorCat = () => {
       if (speed > 3) state.spriteDirection = directionNames[directionIndex];
       const isActing = state.actionFrames && time < state.actionUntil;
       const isIdle = performance.now() - state.lastPointerTime > 500;
-      const frames = isActing ? state.actionFrames : speed > 3 ? movementFrames[state.spriteDirection] : isIdle ? idleFrames.rest : [[7, 3]];
+      const movementSequence = movementFrames[state.spriteDirection] || movementFrames.down;
+      const frames = isActing ? state.actionFrames : speed > 3 ? movementSequence : isIdle ? idleFrames.rest : [[7, 3]];
+      state.frameIndex %= frames.length;
       if (speed > 3 || state.actionFrames || isIdle) {
         if (time - state.frameTime > (state.actionFrames ? 190 : Math.max(115, 230 - speed * 4))) {
           state.frameIndex = (state.frameIndex + 1) % frames.length;
