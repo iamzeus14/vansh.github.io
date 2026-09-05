@@ -8,7 +8,7 @@
   "theme_color": "#0b0d10",
   "icons": [
     {
-      "src": "assets/zeus-icon.jpg",
+      "src": "assets/zeus.jpg",
       "type": "image/jpeg",
       "sizes": "any",
       "purpose": "any maskable"
