@@ -137,6 +137,7 @@ h1 span { color: var(--primary); }
 .current-card.feature { background: radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--primary) 15%, transparent), transparent 38%), linear-gradient(145deg, var(--surface-2), color-mix(in srgb, var(--surface) 70%, var(--surface-2))); }
 .current-card-icon { width: 48px; height: 48px; margin-bottom: 14px; object-fit: contain; align-self: flex-start; }
 [data-theme="light"] .current-card { border-color: color-mix(in srgb, var(--primary) 42%, var(--outline)); background: linear-gradient(145deg, #dce9dc, #f7fbf6); box-shadow: 0 10px 28px rgba(23,32,26,.16); }
+[data-theme="light"] .current-card.feature { border-color: transparent; }
 .card-label { color: var(--primary); font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
 .current-card h3 { max-width: 390px; margin: 0 0 10px; font-size: 30px; }
 .current-card p { color: var(--muted); margin-bottom: 0; }
