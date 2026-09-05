@@ -8,15 +8,8 @@
   "theme_color": "#101312",
   "icons": [
     {
-      "src": "assets/zeus-192.jpg",
+      "src": "assets/zeus.jpg",
       "type": "image/jpeg",
-      "sizes": "192x192",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/zeus-512.jpg",
-      "type": "image/jpeg",
-      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ]

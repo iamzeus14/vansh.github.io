@@ -5,9 +5,7 @@ const APP_SHELL = [
   './css/style.css',
   './js/main.js',
   './manifest.webmanifest',
-  './assets/zeus.jpg',
-  './assets/zeus-192.jpg',
-  './assets/zeus-512.jpg'
+  './assets/zeus.jpg'
 ];
 
 self.addEventListener('install', event => {
