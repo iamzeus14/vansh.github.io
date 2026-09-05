@@ -1,0 +1,17 @@
+{
+  "name": "Vansh",
+  "short_name": "ZEUS",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
+  "icons": [
+    {
+      "src": "assets/zeus.jpg",
+      "type": "image/jpeg",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}
