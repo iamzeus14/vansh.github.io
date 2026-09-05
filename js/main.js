@@ -162,10 +162,7 @@ const initCursorCat = () => {
   window.addEventListener('pointermove', event => {
     const now = performance.now();
     if (state.actionFrames && now < state.actionUntil) {
-      state.pointerX = event.clientX;
-      state.pointerY = event.clientY;
-      state.lastPointerTime = now;
-      return;
+      clearIdleAction();
     }
     if (!state.active) {
       state.pointerX = event.clientX;
