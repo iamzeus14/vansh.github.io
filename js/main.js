@@ -113,7 +113,7 @@ const initCursorCat = () => {
     yawn: [[3, 2], [3, 3]]
   };
 
-  const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
+  const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0, lastRestAnimation: 'scratch' };
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
   const clearIdleAction = () => {
     window.clearTimeout(state.idleTimer);
@@ -134,15 +134,19 @@ const initCursorCat = () => {
       state.targetY = state.y;
       state.vx = 0;
       state.vy = 0;
-      state.actionFrames = Math.random() > .45 ? idleFrames.scratch : idleFrames.yawn;
-      state.actionUntil = performance.now() + 900;
+      state.lastRestAnimation = state.lastRestAnimation === 'yawn' ? 'scratch' : 'yawn';
+      state.actionFrames = idleFrames[state.lastRestAnimation];
+      const actionDuration = 4200 + Math.random() * 800;
+      state.actionUntil = performance.now() + actionDuration;
+      state.frameIndex = 0;
+      state.frameTime = performance.now();
       cat.classList.add('is-curious');
       state.actionTimer = window.setTimeout(() => {
         state.actionFrames = null;
         state.actionUntil = 0;
         cat.classList.remove('is-curious');
         if (state.active && performance.now() - state.lastPointerTime > 500) setIdleBehavior();
-      }, 900);
+      }, actionDuration);
     }, 620 + Math.random() * 480);
   };
 
@@ -157,6 +161,12 @@ const initCursorCat = () => {
 
   window.addEventListener('pointermove', event => {
     const now = performance.now();
+    if (state.actionFrames && now < state.actionUntil) {
+      state.pointerX = event.clientX;
+      state.pointerY = event.clientY;
+      state.lastPointerTime = now;
+      return;
+    }
     if (!state.active) {
       state.pointerX = event.clientX;
       state.pointerY = event.clientY;
