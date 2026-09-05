@@ -1,4 +1,10 @@
 const root = document.documentElement;
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js');
+  });
+}
+
 let savedTheme;
 try {
   savedTheme = localStorage.getItem('portfolio-theme');
