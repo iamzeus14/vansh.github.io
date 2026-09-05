@@ -281,6 +281,7 @@ h1 span { color: var(--primary); }
   .current-grid, .bio-layout, .form-layout { grid-template-columns: 1fr; gap: 25px; }
   .project-grid, .skill-grid { grid-template-columns: 1fr; }
   .tech-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tech-list.reveal { opacity: 1; transform: none; filter: none; }
   .project-info { padding: 20px; font-size: 16px; }
   .project-info h3 { font-size: 32px; }
   .project-info p { font-size: 16px; }
