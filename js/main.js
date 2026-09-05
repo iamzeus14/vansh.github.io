@@ -107,7 +107,11 @@ const initCursorCat = () => {
     right: [[3, 0], [3, 1]], downright: [[5, 1], [5, 2]], down: [[6, 3], [7, 2]], downleft: [[5, 3], [6, 1]],
     left: [[4, 2], [4, 3]], upleft: [[1, 0], [1, 1]], up: [[1, 2], [1, 3]], upright: [[0, 2], [0, 3]]
   };
-  const idleFrames = { scratch: [[5, 0], [6, 0]], yawn: [[3, 2], [3, 3]] };
+  const idleFrames = {
+    rest: [[7, 3], [7, 3], [5, 0], [6, 0]],
+    scratch: [[5, 0], [6, 0]],
+    yawn: [[3, 2], [3, 3]]
+  };
 
   const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0 };
   const clearIdleAction = () => {
@@ -224,8 +228,9 @@ const initCursorCat = () => {
       const directionIndex = Math.round((travelAngle + 360) % 360 / 45) % 8;
       if (speed > 3) state.spriteDirection = directionNames[directionIndex];
       const isActing = state.actionFrames && time < state.actionUntil;
-      const frames = isActing ? state.actionFrames : speed > 3 ? movementFrames[state.spriteDirection] : [[7, 3]];
-      if (speed > 3 || state.actionFrames) {
+      const isIdle = performance.now() - state.lastPointerTime > 500;
+      const frames = isActing ? state.actionFrames : speed > 3 ? movementFrames[state.spriteDirection] : isIdle ? idleFrames.rest : [[7, 3]];
+      if (speed > 3 || state.actionFrames || isIdle) {
         if (time - state.frameTime > (state.actionFrames ? 190 : Math.max(115, 230 - speed * 4))) {
           state.frameIndex = (state.frameIndex + 1) % frames.length;
           state.frameTime = time;
