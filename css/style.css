@@ -133,10 +133,8 @@ h1 span { color: var(--primary); }
 /* Pro Current Card UI */
 .current-card { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; padding: 28px; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--surface) 94%, var(--surface-2)); border: 1px solid color-mix(in srgb, var(--outline) 40%, transparent); box-shadow: 0 4px 20px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.05); transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease); }
 .current-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0; transition: opacity .4s var(--ease); }
-.current-card:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--primary) 50%, transparent); box-shadow: 0 18px 42px rgba(0,0,0,.28), 0 0 28px color-mix(in srgb, var(--primary) 12%, transparent); }
-.current-card:hover::before { opacity: 1; }
+.current-card:hover { transform: translateY(-6px); box-shadow: 0 18px 42px rgba(0,0,0,.28); }
 .card-glass-glow { position: absolute; inset: 0; background: radial-gradient(circle at 85% 15%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 60%); opacity: .5; pointer-events: none; transition: opacity .4s var(--ease); }
-.current-card:hover .card-glass-glow { opacity: 1; }
 .card-top-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
 .card-icon-badge { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--surface-2) 75%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 50%, transparent); color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
 .card-svg-icon { width: 24px; height: 24px; }
@@ -151,7 +149,6 @@ h1 span { color: var(--primary); }
 .current-card p { font-size: 14.5px; line-height: 1.6; color: var(--muted); margin: 0 0 18px; }
 .card-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; margin-top: auto; }
 .chip { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--surface-3) 60%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); transition: border-color .2s, background .2s; }
-.current-card:hover .chip { border-color: color-mix(in srgb, var(--primary) 35%, transparent); }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--outline) 30%, transparent); font-size: 12px; color: var(--muted); }
 .footer-telemetry code { font-family: 'Space Mono', monospace; color: var(--primary); font-weight: 700; font-size: 11px; }
 .footer-arrow { font-size: 15px; color: var(--primary); transition: transform .25s var(--ease); }
@@ -195,14 +192,15 @@ h1 span { color: var(--primary); }
 /* Pro Project Card UI */
 .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 28px; }
 .project-card { position: relative; display: flex; flex-direction: column; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--surface) 94%, var(--surface-2)); border: 1px solid color-mix(in srgb, var(--outline) 40%, transparent); box-shadow: 0 8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.05); overflow: hidden; transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease); }
-.project-card:hover { transform: translateY(-8px); border-color: color-mix(in srgb, var(--primary) 55%, transparent); box-shadow: 0 24px 50px rgba(0,0,0,.26), 0 0 32px color-mix(in srgb, var(--primary) 14%, transparent); }
+.project-card { -webkit-tap-highlight-color: transparent; }
 .project-art { position: relative; height: 210px; width: 100%; overflow: hidden; background: var(--surface-2); }
 .project-image { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .6s cubic-bezier(.16, 1, .3, 1), filter .4s ease; }
-.project-card:hover .project-image { transform: scale(1.05); }
 .project-art-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(16,19,18,.15) 0%, rgba(16,19,18,.8) 100%); pointer-events: none; }
 [data-theme="light"] .project-art-overlay { background: linear-gradient(180deg, rgba(255,255,255,.05) 0%, rgba(23,32,26,.65) 100%); }
 .project-art-badges { position: absolute; inset: 16px; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; z-index: 2; }
 .project-type-badge { padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: .02em; background: rgba(16, 19, 18, 0.76); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.16); color: #edf2ed; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.project-type-badge.official { display: inline-flex; align-items: center; gap: 4px; }
+.project-type-badge.official .material-icons { color: #ff9b45; font-size: 12px; line-height: 1; }
 .project-number { font-family: 'Space Mono', monospace; font-size: 26px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
 .project-info { display: flex; flex-direction: column; padding: 26px; flex-grow: 1; }
 .project-header { margin-bottom: 14px; }
@@ -211,6 +209,8 @@ h1 span { color: var(--primary); }
 .project-info h3 .material-icons { font-size: 22px; color: var(--primary); }
 .project-brand-icon { display: inline-block; flex: 0 0 36px; width: 36px; height: 36px; background-color: var(--primary); }
 .elixir-brand-icon { -webkit-mask: url('../assets/elixirlogo.png') center / 200% no-repeat; mask: url('../assets/elixirlogo.png') center / 200% no-repeat; }
+.cosmicx-brand-icon { -webkit-mask: url('../assets/cosmicXlogo.svg') center / 100% no-repeat; mask: url('../assets/cosmicXlogo.svg') center / 100% no-repeat; }
+.lunaris-brand-icon { -webkit-mask: url('../assets/lunarislogo.svg') center / 135% no-repeat; mask: url('../assets/lunarislogo.svg') center / 135% no-repeat; }
 .project-name-accent { color: var(--primary); }
 .project-device-tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent); }
 .project-description { font-size: 14.5px; line-height: 1.6; color: var(--muted); margin: 0 0 16px; }
@@ -228,10 +228,20 @@ h1 span { color: var(--primary); }
 /* Light Theme Card Polish */
 [data-theme="light"] .current-card,
 [data-theme="light"] .project-card { background: #ffffff; border-color: color-mix(in srgb, var(--outline) 60%, transparent); box-shadow: 0 4px 20px rgba(23, 32, 26, 0.06); }
-[data-theme="light"] .current-card:hover,
-[data-theme="light"] .project-card:hover { box-shadow: 0 20px 40px rgba(23, 32, 26, 0.12); border-color: var(--primary); }
+[data-theme="light"] .current-card:hover { box-shadow: 0 20px 40px rgba(23, 32, 26, 0.12); }
+[data-theme="light"] .current-card { border-color: color-mix(in srgb, var(--outline) 60%, transparent); }
+[data-theme="light"] .project-card { border-color: color-mix(in srgb, var(--outline) 60%, transparent); }
 [data-theme="light"] .current-card { border: 1px solid color-mix(in srgb, var(--outline) 60%, transparent); }
 [data-theme="light"] .card-icon-badge { background: color-mix(in srgb, var(--surface-2) 60%, white); }
+.current-card:is(:hover, :active, :focus, :focus-within) { border-color: color-mix(in srgb, var(--outline) 40%, transparent); }
+[data-theme="light"] .current-card:is(:hover, :active, :focus, :focus-within) { border-color: color-mix(in srgb, var(--outline) 60%, transparent); }
+@media (hover: hover) and (pointer: fine) {
+  .project-card:hover { transform: translateY(-8px); box-shadow: 0 24px 50px rgba(0,0,0,.26); }
+  .project-card:hover .project-image { transform: scale(1.05); }
+  [data-theme="light"] .project-card:hover { box-shadow: 0 20px 40px rgba(23, 32, 26, 0.12); }
+}
+.project-card:is(:hover, :active, :focus, :focus-within) { border-color: color-mix(in srgb, var(--outline) 40%, transparent); }
+[data-theme="light"] .project-card:is(:hover, :active, :focus, :focus-within) { border-color: color-mix(in srgb, var(--outline) 60%, transparent); }
 
 /* Filter Bar & Header */
 .filter-header { margin-bottom: 16px; min-height: 1.2em; display: flex; align-items: baseline; }
