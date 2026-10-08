@@ -280,9 +280,105 @@ const initCursorCat = () => {
   window.requestAnimationFrame(animate);
 };
 
+const initTypewriter = () => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const TYPE_SPEED  = 68;
+  const ERASE_SPEED = 38;
+  const HOLD_AFTER  = 2200;
+  const HOLD_BEFORE = 480;
+
+  /**
+   * Bootstraps a single typewriter instance.
+   * @param {HTMLElement} host  – element with [data-typewriter]
+   * Attribute format (JSON):  [{"text":"All "},{"text":"projects","highlight":true}]
+   */
+  const boot = (host, delay) => {
+    // Parse segments from data attribute
+    let segments;
+    try { segments = JSON.parse(host.dataset.typewriter); } catch { return; }
+
+    // Build a wrapper + cursor if not already present
+    const textEl   = document.createElement('span');
+    const cursorEl = document.createElement('span');
+    textEl.className   = 'typewriter-text';
+    cursorEl.className = 'typewriter-cursor';
+    textEl.setAttribute('aria-hidden', 'true');
+    cursorEl.setAttribute('aria-hidden', 'true');
+
+    // Set aria-label from the plain concatenation so screen readers get it
+    host.setAttribute('aria-label', segments.map(s => s.text).join(''));
+
+    host.innerHTML = '';
+    host.appendChild(textEl);
+    host.appendChild(cursorEl);
+
+    // Flatten segments → [{char, highlight}]
+    const chars = segments.flatMap(seg =>
+      seg.text.split('').map(c => ({ char: c, highlight: !!seg.highlight }))
+    );
+    const fullLength = chars.length;
+
+    // Static render for reduced-motion users
+    if (reduced) {
+      textEl.innerHTML = segments.map(s =>
+        s.highlight ? `<span class="tw-highlight">${s.text}</span>` : s.text
+      ).join('');
+      return;
+    }
+
+    const render = current => {
+      let html = '', i = 0;
+      for (const seg of segments) {
+        const segEnd = i + seg.text.length;
+        const visible = chars.slice(i, Math.min(segEnd, current)).map(c => c.char).join('');
+        if (visible) {
+          html += seg.highlight
+            ? `<span class="tw-highlight">${visible}</span>`
+            : visible;
+        }
+        i = segEnd;
+        if (i >= current) break;
+      }
+      textEl.innerHTML = html;
+    };
+
+    let current = 0, erasing = false;
+
+    const tick = () => {
+      if (!erasing) {
+        cursorEl.classList.add('tw-typing');
+        render(++current);
+        if (current >= fullLength) {
+          cursorEl.classList.remove('tw-typing');
+          setTimeout(() => { erasing = true; tick(); }, HOLD_AFTER);
+        } else {
+          setTimeout(tick, TYPE_SPEED);
+        }
+      } else {
+        cursorEl.classList.add('tw-typing');
+        render(--current);
+        if (current <= 0) {
+          cursorEl.classList.remove('tw-typing');
+          setTimeout(() => { erasing = false; tick(); }, HOLD_BEFORE);
+        } else {
+          setTimeout(tick, ERASE_SPEED);
+        }
+      }
+    };
+
+    setTimeout(tick, delay);
+  };
+
+  document.querySelectorAll('[data-typewriter]').forEach((el, i) => {
+    boot(el, 900 + i * 200);
+  });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initAmbientCollision();
   initCursorCat();
+  initTypewriter();
   const preloader = document.querySelector('.preloader');
   window.setTimeout(() => preloader?.classList.add('done'), 450);
 
