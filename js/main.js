@@ -452,7 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const value = filter.dataset.filter;
     document.querySelectorAll('.project-card').forEach(card => {
       const tags = card.dataset.tags?.split(/\s+/) || [];
-      card.hidden = value !== 'all' && !tags.includes(value);
+      const show = value === 'all' || tags.includes(value);
+      card.hidden = !show;
+      if (show) card.classList.add('visible');
     });
   }));
 
