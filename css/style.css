@@ -204,7 +204,7 @@ h1 span { color: var(--primary); }
 .skill-legend { min-width: 0; margin: 0; padding: 0; list-style: none; }
 .skill-legend-item { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, var(--outline) 28%, transparent); }
 .skill-legend-item:first-child { border-top: 1px solid color-mix(in srgb, var(--outline) 28%, transparent); }
-.skill-legend-swatch { width: 9px; height: 9px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+.skill-legend-swatch { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 .skill-legend-copy { display: grid; gap: 2px; }
 .skill-name { min-width: 0; font-size: 14px; font-weight: 700; }
 .skill-status { color: var(--muted); font-size: 12px; }
