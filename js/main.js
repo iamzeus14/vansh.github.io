@@ -282,12 +282,12 @@ const initCursorCat = () => {
         cat.classList.remove('is-playing');
       }
       const distance = Math.hypot(state.targetX - state.x, state.targetY - state.y);
-      const stiffness = distance > 180 ? 58 : 64;
+      const stiffness = distance > 180 ? 60 : 66;
       const damping = 16;
       let accelerationX = (state.targetX - state.x) * stiffness;
       let accelerationY = (state.targetY - state.y) * stiffness;
       const acceleration = Math.hypot(accelerationX, accelerationY);
-      const maximumAcceleration = 1900;
+      const maximumAcceleration = 2050;
       if (acceleration > maximumAcceleration) {
         accelerationX = accelerationX / acceleration * maximumAcceleration;
         accelerationY = accelerationY / acceleration * maximumAcceleration;
@@ -296,7 +296,7 @@ const initCursorCat = () => {
       state.vy += accelerationY * delta;
       state.vx *= Math.exp(-damping * delta);
       state.vy *= Math.exp(-damping * delta);
-      const maximumSpeed = state.playUntil > time ? 180 : 220;
+      const maximumSpeed = state.playUntil > time ? 195 : 240;
       const velocity = Math.hypot(state.vx, state.vy);
       if (velocity > maximumSpeed) {
         state.vx = state.vx / velocity * maximumSpeed;
@@ -461,12 +461,8 @@ document.addEventListener('DOMContentLoaded', () => {
   revealElements.forEach((element, index) => {
     element.style.setProperty('--reveal-delay', `${index * 120}ms`);
   });
-  document.querySelectorAll('.progress i').forEach((bar, index) => {
-    bar.style.setProperty('--bar-delay', `${index * 120}ms`);
-  });
   const showReveal = element => {
     element.classList.add('visible');
-    element.querySelectorAll('.progress i').forEach(bar => { bar.style.width = bar.dataset.level; });
   };
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(entries => {
