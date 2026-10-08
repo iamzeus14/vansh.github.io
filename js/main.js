@@ -268,12 +268,12 @@ const initCursorCat = () => {
         cat.classList.remove('is-playing');
       }
       const distance = Math.hypot(state.targetX - state.x, state.targetY - state.y);
-      const stiffness = distance > 180 ? 68 : 74;
+      const stiffness = distance > 180 ? 58 : 64;
       const damping = 16;
       let accelerationX = (state.targetX - state.x) * stiffness;
       let accelerationY = (state.targetY - state.y) * stiffness;
       const acceleration = Math.hypot(accelerationX, accelerationY);
-      const maximumAcceleration = 2600;
+      const maximumAcceleration = 1900;
       if (acceleration > maximumAcceleration) {
         accelerationX = accelerationX / acceleration * maximumAcceleration;
         accelerationY = accelerationY / acceleration * maximumAcceleration;
@@ -282,7 +282,7 @@ const initCursorCat = () => {
       state.vy += accelerationY * delta;
       state.vx *= Math.exp(-damping * delta);
       state.vy *= Math.exp(-damping * delta);
-      const maximumSpeed = state.playUntil > time ? 240 : 300;
+      const maximumSpeed = state.playUntil > time ? 180 : 220;
       const velocity = Math.hypot(state.vx, state.vy);
       if (velocity > maximumSpeed) {
         state.vx = state.vx / velocity * maximumSpeed;
