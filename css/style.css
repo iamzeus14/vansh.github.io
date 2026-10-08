@@ -207,10 +207,7 @@ h1 span { color: var(--primary); }
 .project-kicker { display: block; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 4px; }
 .project-info h3 { display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: 700; margin: 0 0 8px; line-height: 1.2; }
 .project-info h3 .material-icons { font-size: 22px; color: var(--primary); }
-.project-brand-icon { display: inline-block; flex: 0 0 36px; width: 36px; height: 36px; background-color: var(--primary); }
-.elixir-brand-icon { -webkit-mask: url('../assets/elixirlogo.png') center / 200% no-repeat; mask: url('../assets/elixirlogo.png') center / 200% no-repeat; }
-.cosmicx-brand-icon { -webkit-mask: url('../assets/cosmicXlogo.svg') center / 100% no-repeat; mask: url('../assets/cosmicXlogo.svg') center / 100% no-repeat; }
-.lunaris-brand-icon { -webkit-mask: url('../assets/lunarislogo.svg') center / 135% no-repeat; mask: url('../assets/lunarislogo.svg') center / 135% no-repeat; }
+.project-brand-icon { display: block; flex: 0 0 36px; width: 36px; height: 36px; object-fit: contain; }
 .project-name-accent { color: var(--primary); }
 .project-device-tag { display: inline-block; padding: 3px 9px; border-radius: 6px; font-size: 11.5px; font-weight: 600; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent); }
 .project-description { font-size: 14.5px; line-height: 1.6; color: var(--muted); margin: 0 0 16px; }
