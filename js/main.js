@@ -13,89 +13,8 @@ try {
 }
 if (savedTheme) root.dataset.theme = savedTheme;
 
-const initAmbientCollision = () => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 1024px), (pointer: coarse)').matches) return;
-
-  const stage = document.createElement('div');
-  stage.className = 'ambient-stage';
-  stage.setAttribute('aria-hidden', 'true');
-  document.body.prepend(stage);
-
-  const orbs = [
-    { className: 'ambient-orb--primary', size: 420, x: .86, y: .23, vx: -24, vy: 20, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--secondary', size: 300, x: .17, y: .78, vx: 22, vy: -18, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--tertiary', size: 190, x: .52, y: .45, vx: -16, vy: -22, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--accent', size: 120, x: .38, y: .16, vx: 28, vy: 14, maxSpeed: 42, nextImpulse: 0 }
-  ].map(config => {
-    const element = document.createElement('div');
-    element.className = `ambient-orb ${config.className}`;
-    element.setAttribute('aria-hidden', 'true');
-    stage.appendChild(element);
-    return { ...config, element };
-  });
-
-  const bounds = () => ({ width: window.innerWidth, height: window.innerHeight });
-  const resize = () => {
-    const { width, height } = bounds();
-    orbs.forEach(orb => {
-      orb.x = Math.min(width, Math.max(0, width * orb.xRatio));
-      orb.y = Math.min(height, Math.max(0, height * orb.yRatio));
-    });
-  };
-
-  orbs.forEach(orb => {
-    orb.xRatio = orb.x;
-    orb.yRatio = orb.y;
-  });
-  resize();
-
-  let previousTime;
-  const animate = time => {
-    if (!previousTime) previousTime = time;
-    const delta = Math.min((time - previousTime) / 1000, .04);
-    previousTime = time;
-    const { width, height } = bounds();
-
-    orbs.forEach(orb => {
-      const radius = orb.size / 2;
-      if (time >= orb.nextImpulse) {
-        const angle = Math.random() * Math.PI * 2;
-        const impulse = 5 + Math.random() * 8;
-        orb.vx += Math.cos(angle) * impulse * delta;
-        orb.vy += Math.sin(angle) * impulse * delta;
-        orb.nextImpulse = time + 2600 + Math.random() * 4200;
-      }
-      const speed = Math.hypot(orb.vx, orb.vy);
-      if (speed > orb.maxSpeed) {
-        orb.vx = orb.vx / speed * orb.maxSpeed;
-        orb.vy = orb.vy / speed * orb.maxSpeed;
-      }
-      orb.x += orb.vx * delta;
-      orb.y += orb.vy * delta;
-      if (orb.x < -radius) {
-        orb.x = width + radius;
-      } else if (orb.x > width + radius) {
-        orb.x = -radius;
-      }
-      if (orb.y < -radius) {
-        orb.y = height + radius;
-      } else if (orb.y > height + radius) {
-        orb.y = -radius;
-      }
-    });
-
-    orbs.forEach(orb => {
-      orb.element.style.transform = `translate3d(${orb.x}px, ${orb.y}px, 0) translate3d(-50%, -50%, 0)`;
-    });
-    window.requestAnimationFrame(animate);
-  };
-
-  window.addEventListener('resize', resize, { passive: true });
-  window.requestAnimationFrame(animate);
-};
-
 const initCursorCat = () => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 1024px), (pointer: coarse)').matches) return;
 
   const cat = document.createElement('div');
   cat.className = 'cursor-cat';
@@ -114,7 +33,12 @@ const initCursorCat = () => {
   };
 
   const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0, lastRestAnimation: 'scratch' };
-  const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+  let animationFrame;
+  let previousTime;
+  let lastFrameTime = 0;
+  const startAnimation = () => {
+    if (!animationFrame && !document.hidden) animationFrame = window.requestAnimationFrame(animate);
+  };
   const clearIdleAction = () => {
     window.clearTimeout(state.idleTimer);
     window.clearTimeout(state.actionTimer);
@@ -141,6 +65,7 @@ const initCursorCat = () => {
       state.frameIndex = 0;
       state.frameTime = performance.now();
       cat.classList.add('is-curious');
+      startAnimation();
       state.actionTimer = window.setTimeout(() => {
         state.actionFrames = null;
         state.actionUntil = 0;
@@ -149,15 +74,6 @@ const initCursorCat = () => {
       }, actionDuration);
     }, 620 + Math.random() * 480);
   };
-
-  if (isTouchDevice) {
-    state.pointerX = state.x + 32;
-    state.pointerY = state.y + 32;
-    state.active = true;
-    state.lastPointerTime = performance.now();
-    cat.classList.add('is-visible');
-    setIdleBehavior();
-  }
 
   window.addEventListener('pointermove', event => {
     const now = performance.now();
@@ -173,6 +89,7 @@ const initCursorCat = () => {
       state.active = true;
       cat.classList.add('is-visible');
       setIdleBehavior();
+      startAnimation();
       return;
     }
     clearIdleAction();
@@ -196,10 +113,17 @@ const initCursorCat = () => {
     state.active = true;
     cat.classList.add('is-visible');
     setIdleBehavior();
+    startAnimation();
   }, { passive: true });
 
-  let previousTime;
   const animate = time => {
+    animationFrame = undefined;
+    if (document.hidden || !state.active) return;
+    if (time - lastFrameTime < 1000 / 30) {
+      animationFrame = window.requestAnimationFrame(animate);
+      return;
+    }
+    lastFrameTime = time;
     if (!previousTime) previousTime = time;
     const delta = Math.min((time - previousTime) / 1000, .033);
     previousTime = time;
@@ -266,18 +190,30 @@ const initCursorCat = () => {
       cat.style.setProperty('--walk-speed', `${Math.max(.16, Math.min(.34, .34 - speed * .004))}s`);
       
       cat.classList.toggle('is-walking', speed > 12);
+      if (speed < 3 && time >= state.playUntil && !isActing) {
+        state.x = state.targetX;
+        state.y = state.targetY;
+        state.vx = 0;
+        state.vy = 0;
+        cat.style.transform = `translate3d(${state.x}px, ${state.y}px, 0)`;
+        return;
+      }
     }
-    window.requestAnimationFrame(animate);
+    animationFrame = window.requestAnimationFrame(animate);
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
       previousTime = undefined;
+      lastFrameTime = 0;
       state.frameTime = performance.now();
       state.vx = 0;
       state.vy = 0;
+      startAnimation();
+    } else if (animationFrame) {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
     }
   });
-  window.requestAnimationFrame(animate);
 };
 
 const initTypewriter = () => {
@@ -376,11 +312,9 @@ const initTypewriter = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  initAmbientCollision();
   initCursorCat();
   initTypewriter();
-  const preloader = document.querySelector('.preloader');
-  window.setTimeout(() => preloader?.classList.add('done'), 450);
+  document.querySelector('.preloader')?.remove();
 
   const menu = document.querySelector('.menu-btn');
   const nav = document.querySelector('.nav-links');
@@ -407,9 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const revealElements = document.querySelectorAll('.reveal');
-  revealElements.forEach((element, index) => {
-    element.style.setProperty('--reveal-delay', `${index * 120}ms`);
-  });
   document.querySelectorAll('.progress i').forEach((bar, index) => {
     bar.style.setProperty('--bar-delay', `${index * 120}ms`);
   });
