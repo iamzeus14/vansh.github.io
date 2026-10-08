@@ -64,6 +64,8 @@ const initAmbientCollision = () => {
   let previousTime;
   let lastFrameTime = 0;
   let animationFrame;
+  let scrollResumeTimer;
+  let isScrolling = false;
   const frameInterval = compactViewport.matches ? 1000 / 24 : 1000 / 30;
   const animate = time => {
     animationFrame = undefined;
@@ -111,9 +113,20 @@ const initAmbientCollision = () => {
   };
 
   const startAnimation = () => {
-    if (!reducedMotion.matches && !document.hidden && !animationFrame) {
+    if (!reducedMotion.matches && !document.hidden && !isScrolling && !animationFrame) {
       animationFrame = window.requestAnimationFrame(animate);
     }
+  };
+  const pauseDuringScroll = () => {
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+    isScrolling = true;
+    if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    animationFrame = undefined;
+    window.clearTimeout(scrollResumeTimer);
+    scrollResumeTimer = window.setTimeout(() => {
+      isScrolling = false;
+      startAnimation();
+    }, 180);
   };
   const stopAnimation = () => {
     if (animationFrame) window.cancelAnimationFrame(animationFrame);
@@ -122,6 +135,7 @@ const initAmbientCollision = () => {
     lastFrameTime = 0;
   };
   window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('scroll', pauseDuringScroll, { passive: true });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stopAnimation();
     else startAnimation();
