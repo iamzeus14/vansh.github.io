@@ -14,18 +14,19 @@ try {
 if (savedTheme) root.dataset.theme = savedTheme;
 
 const initAmbientCollision = () => {
-  if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 1024px), (pointer: coarse)').matches) return;
-
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const compactViewport = window.matchMedia('(max-width: 640px)');
+  let sizeScale = compactViewport.matches ? .7 : 1;
   const stage = document.createElement('div');
   stage.className = 'ambient-stage';
   stage.setAttribute('aria-hidden', 'true');
   document.body.prepend(stage);
 
   const orbs = [
-    { className: 'ambient-orb--primary', size: 420, x: .86, y: .23, vx: -24, vy: 20, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--secondary', size: 300, x: .17, y: .78, vx: 22, vy: -18, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--tertiary', size: 190, x: .52, y: .45, vx: -16, vy: -22, maxSpeed: 42, nextImpulse: 0 },
-    { className: 'ambient-orb--accent', size: 120, x: .38, y: .16, vx: 28, vy: 14, maxSpeed: 42, nextImpulse: 0 }
+    { className: 'ambient-orb--primary', baseSize: 420, size: 420 * sizeScale, x: .86, y: .23, vx: -24, vy: 20, maxSpeed: 32, nextImpulse: 0 },
+    { className: 'ambient-orb--secondary', baseSize: 300, size: 300 * sizeScale, x: .17, y: .78, vx: 22, vy: -18, maxSpeed: 30, nextImpulse: 0 },
+    { className: 'ambient-orb--tertiary', baseSize: 190, size: 190 * sizeScale, x: .52, y: .45, vx: -16, vy: -22, maxSpeed: 26, nextImpulse: 0 },
+    { className: 'ambient-orb--accent', baseSize: 120, size: 120 * sizeScale, x: .38, y: .16, vx: 28, vy: 14, maxSpeed: 24, nextImpulse: 0 }
   ].map(config => {
     const element = document.createElement('div');
     element.className = `ambient-orb ${config.className}`;
@@ -35,12 +36,23 @@ const initAmbientCollision = () => {
   });
 
   const bounds = () => ({ width: window.innerWidth, height: window.innerHeight });
+  const positionOrbs = () => {
+    orbs.forEach(orb => {
+      orb.element.style.transform = `translate3d(${orb.x}px, ${orb.y}px, 0) translate3d(-50%, -50%, 0)`;
+    });
+  };
   const resize = () => {
     const { width, height } = bounds();
+    const nextSizeScale = compactViewport.matches ? .7 : 1;
+    if (nextSizeScale !== sizeScale) {
+      sizeScale = nextSizeScale;
+      orbs.forEach(orb => { orb.size = orb.baseSize * sizeScale; });
+    }
     orbs.forEach(orb => {
       orb.x = Math.min(width, Math.max(0, width * orb.xRatio));
       orb.y = Math.min(height, Math.max(0, height * orb.yRatio));
     });
+    positionOrbs();
   };
 
   orbs.forEach(orb => {
@@ -50,7 +62,17 @@ const initAmbientCollision = () => {
   resize();
 
   let previousTime;
+  let lastFrameTime = 0;
+  let animationFrame;
+  const frameInterval = compactViewport.matches ? 1000 / 24 : 1000 / 30;
   const animate = time => {
+    animationFrame = undefined;
+    if (document.hidden || reducedMotion.matches) return;
+    if (time - lastFrameTime < frameInterval) {
+      animationFrame = window.requestAnimationFrame(animate);
+      return;
+    }
+    lastFrameTime = time;
     if (!previousTime) previousTime = time;
     const delta = Math.min((time - previousTime) / 1000, .04);
     previousTime = time;
@@ -84,14 +106,31 @@ const initAmbientCollision = () => {
       }
     });
 
-    orbs.forEach(orb => {
-      orb.element.style.transform = `translate3d(${orb.x}px, ${orb.y}px, 0) translate3d(-50%, -50%, 0)`;
-    });
-    window.requestAnimationFrame(animate);
+    positionOrbs();
+    animationFrame = window.requestAnimationFrame(animate);
   };
 
+  const startAnimation = () => {
+    if (!reducedMotion.matches && !document.hidden && !animationFrame) {
+      animationFrame = window.requestAnimationFrame(animate);
+    }
+  };
+  const stopAnimation = () => {
+    if (animationFrame) window.cancelAnimationFrame(animationFrame);
+    animationFrame = undefined;
+    previousTime = undefined;
+    lastFrameTime = 0;
+  };
   window.addEventListener('resize', resize, { passive: true });
-  window.requestAnimationFrame(animate);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopAnimation();
+    else startAnimation();
+  });
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) stopAnimation();
+    else startAnimation();
+  });
+  startAnimation();
 };
 
 const initCursorCat = () => {
@@ -115,6 +154,13 @@ const initCursorCat = () => {
 
   const state = { x: window.innerWidth * .5, y: window.innerHeight * .52, vx: 0, vy: 0, targetX: window.innerWidth * .5, targetY: window.innerHeight * .52, pointerX: 0, pointerY: 0, active: false, lastPointerTime: 0, idleTimer: 0, actionTimer: 0, playUntil: 0, spriteDirection: 'down', frameIndex: 0, frameTime: 0, actionFrames: null, actionUntil: 0, lastRestAnimation: 'scratch' };
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+  let animationFrame;
+  let idleFrameTimer;
+  const startAnimation = () => {
+    window.clearTimeout(idleFrameTimer);
+    idleFrameTimer = undefined;
+    if (!document.hidden && !animationFrame) animationFrame = window.requestAnimationFrame(animate);
+  };
   const clearIdleAction = () => {
     window.clearTimeout(state.idleTimer);
     window.clearTimeout(state.actionTimer);
@@ -141,6 +187,7 @@ const initCursorCat = () => {
       state.frameIndex = 0;
       state.frameTime = performance.now();
       cat.classList.add('is-curious');
+      startAnimation();
       state.actionTimer = window.setTimeout(() => {
         state.actionFrames = null;
         state.actionUntil = 0;
@@ -173,6 +220,7 @@ const initCursorCat = () => {
       state.active = true;
       cat.classList.add('is-visible');
       setIdleBehavior();
+      startAnimation();
       return;
     }
     clearIdleAction();
@@ -196,13 +244,18 @@ const initCursorCat = () => {
     state.active = true;
     cat.classList.add('is-visible');
     setIdleBehavior();
+    startAnimation();
   }, { passive: true });
 
   let previousTime;
   const animate = time => {
+    animationFrame = undefined;
+    if (document.hidden) return;
     if (!previousTime) previousTime = time;
     const delta = Math.min((time - previousTime) / 1000, .033);
     previousTime = time;
+    let moving = false;
+    let acting = false;
     if (state.active) {
       const pointerDistance = Math.hypot(state.pointerX - state.x, state.pointerY - state.y) || 1;
       if (time < state.playUntil) {
@@ -215,12 +268,12 @@ const initCursorCat = () => {
         cat.classList.remove('is-playing');
       }
       const distance = Math.hypot(state.targetX - state.x, state.targetY - state.y);
-      const stiffness = distance > 180 ? 68 : 74;
-      const damping = 16;
+      const stiffness = distance > 180 ? 120 : 135;
+      const damping = 18;
       let accelerationX = (state.targetX - state.x) * stiffness;
       let accelerationY = (state.targetY - state.y) * stiffness;
       const acceleration = Math.hypot(accelerationX, accelerationY);
-      const maximumAcceleration = 2600;
+      const maximumAcceleration = 6000;
       if (acceleration > maximumAcceleration) {
         accelerationX = accelerationX / acceleration * maximumAcceleration;
         accelerationY = accelerationY / acceleration * maximumAcceleration;
@@ -229,7 +282,7 @@ const initCursorCat = () => {
       state.vy += accelerationY * delta;
       state.vx *= Math.exp(-damping * delta);
       state.vy *= Math.exp(-damping * delta);
-      const maximumSpeed = state.playUntil > time ? 240 : 300;
+      const maximumSpeed = state.playUntil > time ? 360 : 520;
       const velocity = Math.hypot(state.vx, state.vy);
       if (velocity > maximumSpeed) {
         state.vx = state.vx / velocity * maximumSpeed;
@@ -246,6 +299,8 @@ const initCursorCat = () => {
       if (speed > 3) state.spriteDirection = directionNames[directionIndex];
       const isActing = state.actionFrames && time < state.actionUntil;
       const isIdle = performance.now() - state.lastPointerTime > 500;
+      moving = speed > 3;
+      acting = Boolean(isActing);
       const movementSequence = movementFrames[state.spriteDirection] || movementFrames.down;
       const frames = isActing ? state.actionFrames : speed > 3 ? movementSequence : isIdle ? idleFrames.rest : [[7, 3]];
       state.frameIndex %= frames.length;
@@ -267,7 +322,11 @@ const initCursorCat = () => {
       
       cat.classList.toggle('is-walking', speed > 12);
     }
-    window.requestAnimationFrame(animate);
+    if (moving || acting || performance.now() - state.lastPointerTime <= 500) {
+      animationFrame = window.requestAnimationFrame(animate);
+    } else {
+      idleFrameTimer = window.setTimeout(startAnimation, 1000 / 12);
+    }
   };
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
@@ -275,9 +334,15 @@ const initCursorCat = () => {
       state.frameTime = performance.now();
       state.vx = 0;
       state.vy = 0;
+      if (state.active) startAnimation();
+    } else {
+      window.cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
+      window.clearTimeout(idleFrameTimer);
+      idleFrameTimer = undefined;
     }
   });
-  window.requestAnimationFrame(animate);
+  if (isTouchDevice) startAnimation();
 };
 
 const initTypewriter = () => {
