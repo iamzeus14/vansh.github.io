@@ -375,6 +375,8 @@ h1 span { color: var(--primary); }
   .footer-inner > * + * { margin-top: 8px; }
   .reveal { transform: translate3d(0, 16px, 0); filter: none; transition: opacity .45s var(--ease), transform .45s var(--ease); will-change: opacity, transform; transition-delay: 0ms; }
   .reveal.visible { filter: none; }
+  .skill-chart.reveal { opacity: 1; transform: none; filter: none; }
+  .skill-chart:not(.visible) .skill-ring-progress { stroke-dashoffset: 0; }
 }
 @media (max-width: 520px) {
   .tech-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
