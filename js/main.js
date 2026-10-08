@@ -346,97 +346,69 @@ const initCursorCat = () => {
 };
 
 const initTypewriter = () => {
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const TYPE_SPEED  = 68;
-  const ERASE_SPEED = 38;
-  const HOLD_AFTER  = 2200;
-  const HOLD_BEFORE = 480;
-
-  /**
-   * Bootstraps a single typewriter instance.
-   * @param {HTMLElement} host  – element with [data-typewriter]
-   * Attribute format (JSON):  [{"text":"All "},{"text":"projects","highlight":true}]
-   */
-  const boot = (host, delay) => {
-    // Parse segments from data attribute
+  const typeSpeed = 68;
+  document.querySelectorAll('[data-typewriter]').forEach(host => {
     let segments;
-    try { segments = JSON.parse(host.dataset.typewriter); } catch { return; }
-
-    // Build a wrapper + cursor if not already present
-    const textEl   = document.createElement('span');
-    const cursorEl = document.createElement('span');
-    textEl.className   = 'typewriter-text';
-    cursorEl.className = 'typewriter-cursor';
-    textEl.setAttribute('aria-hidden', 'true');
-    cursorEl.setAttribute('aria-hidden', 'true');
-
-    // Set aria-label from the plain concatenation so screen readers get it
-    host.setAttribute('aria-label', segments.map(s => s.text).join(''));
-
-    host.innerHTML = '';
-    host.appendChild(textEl);
-    host.appendChild(cursorEl);
-
-    // Flatten segments → [{char, highlight}]
-    const chars = segments.flatMap(seg =>
-      seg.text.split('').map(c => ({ char: c, highlight: !!seg.highlight }))
-    );
-    const fullLength = chars.length;
-
-    // Static render for reduced-motion users
-    if (reduced) {
-      textEl.innerHTML = segments.map(s =>
-        s.highlight ? `<span class="tw-highlight">${s.text}</span>` : s.text
-      ).join('');
+    try {
+      segments = JSON.parse(host.dataset.typewriter);
+    } catch (error) {
+      console.error('Unable to parse typewriter text.', error);
+      return;
+    }
+    if (!Array.isArray(segments) || !segments.every(segment =>
+      segment && typeof segment.text === 'string' &&
+      (segment.highlight === undefined || typeof segment.highlight === 'boolean')
+    )) {
+      console.error('Typewriter text has an invalid segment format.', host);
       return;
     }
 
-    const render = current => {
-      let html = '', i = 0;
-      for (const seg of segments) {
-        const segEnd = i + seg.text.length;
-        const visible = chars.slice(i, Math.min(segEnd, current)).map(c => c.char).join('');
-        if (visible) {
-          html += seg.highlight
-            ? `<span class="tw-highlight">${visible}</span>`
-            : visible;
-        }
-        i = segEnd;
-        if (i >= current) break;
-      }
-      textEl.innerHTML = html;
-    };
+    const fullText = segments.map(segment => segment.text).join('');
+    host.setAttribute('aria-label', fullText);
 
-    let current = 0, erasing = false;
+    const text = document.createElement('span');
+    text.className = 'typewriter-text';
+    text.setAttribute('aria-hidden', 'true');
+    const cursor = document.createElement('span');
+    cursor.className = 'typewriter-cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+    host.replaceChildren(text, cursor);
+
+    let position = 0;
+    const render = () => {
+      const fragment = document.createDocumentFragment();
+      let remaining = position;
+      for (const segment of segments) {
+        const visible = segment.text.slice(0, Math.max(0, Math.min(segment.text.length, remaining)));
+        if (visible) {
+          if (segment.highlight) {
+            const highlight = document.createElement('span');
+            highlight.className = 'tw-highlight';
+            highlight.textContent = visible;
+            fragment.appendChild(highlight);
+          } else {
+            fragment.appendChild(document.createTextNode(visible));
+          }
+        }
+        remaining -= segment.text.length;
+        if (remaining <= 0) break;
+      }
+      text.replaceChildren(fragment);
+    };
 
     const tick = () => {
-      if (!erasing) {
-        cursorEl.classList.add('tw-typing');
-        render(++current);
-        if (current >= fullLength) {
-          cursorEl.classList.remove('tw-typing');
-          setTimeout(() => { erasing = true; tick(); }, HOLD_AFTER);
-        } else {
-          setTimeout(tick, TYPE_SPEED);
-        }
-      } else {
-        cursorEl.classList.add('tw-typing');
-        render(--current);
-        if (current <= 0) {
-          cursorEl.classList.remove('tw-typing');
-          setTimeout(() => { erasing = false; tick(); }, HOLD_BEFORE);
-        } else {
-          setTimeout(tick, ERASE_SPEED);
-        }
+      position += 1;
+      render();
+      if (position >= fullText.length) {
+        cursor.remove();
+        return;
       }
+      window.setTimeout(tick, typeSpeed);
     };
 
-    setTimeout(tick, delay);
-  };
-
-  document.querySelectorAll('[data-typewriter]').forEach((el, i) => {
-    boot(el, 900 + i * 200);
+    window.setTimeout(tick, 900);
   });
 };
 
