@@ -187,7 +187,7 @@ h1 span { color: var(--primary); }
 .skill-rings { width: min(100%, 290px); margin-inline: auto; }
 .skill-rings-graphic { display: block; width: 100%; height: auto; overflow: visible; }
 .skill-ring-progress { fill: none; stroke-width: 14; }
-.skill-ring-progress { stroke: currentColor; stroke-dasharray: var(--skill-progress) 100; stroke-dashoffset: var(--skill-progress); stroke-linecap: round; }
+.skill-ring-progress { stroke: currentColor; stroke-dasharray: var(--skill-progress) 100; stroke-dashoffset: 0; stroke-linecap: round; }
 .skill-chart.visible .skill-ring-progress { animation: skill-ring-draw 1.6s cubic-bezier(.22, 1, .36, 1) var(--ring-delay, 0ms) both; }
 .skill-chart.visible .skill-ring-c { --ring-delay: 0ms; }
 .skill-chart.visible .skill-ring-shell { --ring-delay: 80ms; }
@@ -236,6 +236,9 @@ h1 span { color: var(--primary); }
 .project-header { margin-bottom: 14px; }
 .project-kicker { display: block; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 4px; }
 .project-info h3 { display: flex; align-items: center; gap: 8px; font-size: 24px; font-weight: 700; margin: 0 0 8px; line-height: 1.2; }
+.project-info h3.axionos-title { gap: 8px; }
+.axionos-wordmark { display: inline-flex; gap: .18em; }
+.project-info h3 > .project-brand-icon.axionos-brand-icon { flex-basis: 40px; width: 40px; min-width: 40px; max-width: 40px; height: 40px; min-height: 40px; max-height: 40px; }
 .project-info h3 .material-icons { font-size: 22px; color: var(--primary); }
 .project-info h3 > .project-brand-icon { display: block; flex: 0 0 32px; width: 32px; min-width: 32px; max-width: 32px; height: 32px; min-height: 32px; max-height: 32px; object-fit: contain; }
 .project-name-accent { color: var(--primary); }
@@ -244,7 +247,7 @@ h1 span { color: var(--primary); }
 .project-description strong { color: var(--on-surface); }
 .project-highlights { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 7px; }
 .project-highlights li { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.5; color: color-mix(in srgb, var(--on-surface) 88%, transparent); }
-.project-highlights li::before { content: '▹'; position: absolute; left: 0; top: 0; color: var(--primary); font-weight: 700; font-size: 13px; }
+.project-highlights li::before { content: ''; position: absolute; left: 2px; top: .55em; width: 6px; height: 6px; border-right: 2px solid var(--primary); border-bottom: 2px solid var(--primary); transform: rotate(-45deg); }
 .project-info .tags { margin-top: auto; margin-bottom: 20px; gap: 6px; }
 .project-info .tag { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--surface-3) 55%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); }
 .project-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--outline) 30%, transparent); }
@@ -324,6 +327,7 @@ h1 span { color: var(--primary); }
 .footer-inner strong { color: var(--on-surface); font-weight: 600; }
 .reveal { opacity: 0; transform: translate3d(0, 28px, 0) scale(.98); filter: blur(4px) saturate(.72); transition: opacity .72s var(--ease), transform .72s var(--ease), filter .72s var(--ease); will-change: opacity, transform, filter; transition-delay: var(--reveal-delay, 0ms); }
 .reveal.visible { opacity: 1; transform: none; filter: blur(0) saturate(1); }
+.skill-chart.reveal { opacity: 1; transform: none; filter: none; }
 .project-card.reveal { transform-origin: center bottom; }
 .btn:focus-visible, .icon-btn:focus-visible, .menu-btn:focus-visible, .filter:focus-visible, .gallery-item:focus-visible, .social:focus-visible, .text-link:focus-visible { outline: 3px solid var(--tertiary); outline-offset: 3px; }
 .preloader { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; transition: opacity .5s, visibility .5s; }
@@ -369,6 +373,7 @@ h1 span { color: var(--primary); }
   .project-info { padding: 20px; font-size: 16px; }
   .project-info h3 { font-size: 32px; }
   .project-info h3 > .project-brand-icon { flex-basis: 27px; width: 27px; min-width: 27px; max-width: 27px; height: 27px; min-height: 27px; max-height: 27px; }
+  .project-info h3 > .project-brand-icon.axionos-brand-icon { flex-basis: 36px; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; max-height: 36px; }
   .project-info p { font-size: 16px; }
   .profile-placeholder { max-width: 300px; margin-inline: auto; }
   .bio { padding: 18px 0 18px 18px; }
@@ -380,8 +385,6 @@ h1 span { color: var(--primary); }
   .footer-inner > * + * { margin-top: 8px; }
   .reveal { transform: translate3d(0, 16px, 0); filter: none; transition: opacity .45s var(--ease), transform .45s var(--ease); will-change: opacity, transform; transition-delay: 0ms; }
   .reveal.visible { filter: none; }
-  .skill-chart.reveal { opacity: 1; transform: none; filter: none; }
-  .skill-chart:not(.visible) .skill-ring-progress { stroke-dashoffset: 0; }
 }
 @media (max-width: 520px) {
   .tech-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
