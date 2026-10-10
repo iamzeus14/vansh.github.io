@@ -248,8 +248,8 @@ h1 span { color: var(--primary); }
 .project-highlights { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 7px; }
 .project-highlights li { position: relative; padding-left: 18px; font-size: 13px; line-height: 1.5; color: color-mix(in srgb, var(--on-surface) 88%, transparent); }
 .project-highlights li::before { content: ''; position: absolute; left: 2px; top: .55em; width: 6px; height: 6px; border-right: 2px solid var(--primary); border-bottom: 2px solid var(--primary); transform: rotate(-45deg); }
-.project-info .tags { margin-top: auto; margin-bottom: 20px; gap: 6px; }
-.project-info .tag { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, var(--surface-3) 55%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); }
+.project-info .tags { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; margin-top: auto; margin-bottom: 20px; }
+.project-info .tag { max-width: 100%; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; background: color-mix(in srgb, var(--surface-3) 55%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); }
 .project-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--outline) 30%, transparent); }
 .project-status-note { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .project-link-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); border: 1px solid color-mix(in srgb, var(--primary) 28%, transparent); transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease), border-color .2s; }
@@ -375,6 +375,7 @@ h1 span { color: var(--primary); }
   .project-info h3 > .project-brand-icon { flex-basis: 27px; width: 27px; min-width: 27px; max-width: 27px; height: 27px; min-height: 27px; max-height: 27px; }
   .project-info h3 > .project-brand-icon.axionos-brand-icon { flex-basis: 36px; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; max-height: 36px; }
   .project-info p { font-size: 16px; }
+  .project-info .tags { gap: 7px; margin-bottom: 18px; }
   .profile-placeholder { max-width: 300px; margin-inline: auto; }
   .bio { padding: 18px 0 18px 18px; }
   .bio p { font-size: 17px; }
