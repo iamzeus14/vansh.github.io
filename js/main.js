@@ -492,12 +492,7 @@ const initSkillConnectors = () => {
         : { x: cx + Math.cos(endAngle) * radius, y: cy + Math.sin(endAngle) * radius };
     }
 
-    const strokeWidth = Number.parseFloat(getComputedStyle(activeSkill.ring).strokeWidth);
-    const edgeOffset = (Number.isFinite(strokeWidth) ? strokeWidth : 0) / 2;
-    const ringPoint = toScreenPoint(
-      cx + (ringPointLocal.x - cx) / radius * (radius + edgeOffset),
-      cy + (ringPointLocal.y - cy) / radius * (radius + edgeOffset)
-    );
+    const ringPoint = toScreenPoint(ringPointLocal.x, ringPointLocal.y);
     const x1 = ringPoint.x - connectorRect.left;
     const y1 = ringPoint.y - connectorRect.top;
     const x2 = targetX - connectorRect.left;
