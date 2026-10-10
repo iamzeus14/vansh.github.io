@@ -159,8 +159,8 @@ h1 span { color: var(--primary); }
 .card-kicker { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--primary); margin-bottom: 6px; }
 .current-card h3 { font-size: 24px; line-height: 1.2; margin: 0 0 10px; font-weight: 700; }
 .current-card p { font-size: 14.5px; line-height: 1.6; color: var(--muted); margin: 0 0 18px; }
-.card-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; margin-top: auto; }
-.chip { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--surface-3) 60%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); transition: border-color .2s, background .2s; }
+.card-chips { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 8px; min-width: 0; margin-bottom: 20px; margin-top: auto; }
+.chip { max-width: 100%; padding: 5px 11px; border-radius: 999px; font-size: 11px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; background: color-mix(in srgb, var(--surface-3) 60%, transparent); border: 1px solid color-mix(in srgb, var(--outline) 35%, transparent); color: var(--on-surface); transition: border-color .2s, background .2s; }
 .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--outline) 30%, transparent); font-size: 12px; color: var(--muted); }
 .footer-telemetry code { font-family: 'Space Mono', monospace; color: var(--primary); font-weight: 700; font-size: 11px; }
 .footer-arrow { font-size: 15px; color: var(--primary); transition: transform .25s var(--ease); }
@@ -183,11 +183,12 @@ h1 span { color: var(--primary); }
 .bio h2 { font-size: 42px; margin: 0 0 20px; }
 .bio p { max-width: 640px; margin-bottom: 20px; color: var(--on-surface); font-size: 18px; font-weight: 600; line-height: 1.75; }
 .bio p:last-child { margin-bottom: 0; }
-.skill-chart { display: grid; grid-template-columns: minmax(200px, .8fr) minmax(0, 1.2fr); align-items: center; gap: clamp(24px, 5vw, 60px); padding: clamp(24px, 4vw, 40px); }
-.skill-rings { width: min(100%, 290px); margin-inline: auto; }
+.skill-chart { position: relative; display: grid; grid-template-columns: minmax(200px, .8fr) minmax(0, 1.2fr); align-items: center; gap: clamp(24px, 5vw, 60px); padding: clamp(24px, 4vw, 40px); }
+.skill-rings { position: relative; z-index: 1; width: min(100%, 290px); margin-inline: auto; }
 .skill-rings-graphic { display: block; width: 100%; height: auto; overflow: visible; }
 .skill-ring-progress { fill: none; stroke-width: 14; }
 .skill-ring-progress { stroke: currentColor; stroke-dasharray: var(--skill-progress) 100; stroke-dashoffset: 0; stroke-linecap: round; }
+.skill-ring-progress { cursor: crosshair; pointer-events: stroke; }
 .skill-chart.visible .skill-ring-progress { animation: skill-ring-draw 1.6s cubic-bezier(.22, 1, .36, 1) var(--ring-delay, 0ms) both; }
 .skill-chart.visible .skill-ring-c { --ring-delay: 0ms; }
 .skill-chart.visible .skill-ring-shell { --ring-delay: 80ms; }
@@ -202,13 +203,23 @@ h1 span { color: var(--primary); }
 .skill-ring-linux, .skill-legend-linux .skill-legend-swatch, .skill-legend-linux .skill-value { color: var(--skill-color-linux); }
 .skill-ring-aosp, .skill-legend-aosp .skill-legend-swatch, .skill-legend-aosp .skill-value { color: var(--skill-color-aosp); }
 .skill-legend { min-width: 0; margin: 0; padding: 0; list-style: none; }
-.skill-legend-item { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, var(--outline) 28%, transparent); }
+.skill-legend-item { position: relative; z-index: 3; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 16px 0; border-bottom: 1px solid color-mix(in srgb, var(--outline) 28%, transparent); outline: none; }
 .skill-legend-item:first-child { border-top: 1px solid color-mix(in srgb, var(--outline) 28%, transparent); }
+.skill-legend-item:focus-visible .skill-name { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 3px; }
 .skill-legend-swatch { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 .skill-legend-copy { display: grid; gap: 2px; }
 .skill-name { min-width: 0; font-size: 14px; font-weight: 700; }
 .skill-status { color: var(--muted); font-size: 12px; }
 .skill-value { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; }
+.skill-connector { position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; opacity: 0; transition: opacity .18s ease; }
+.skill-chart.has-active-skill .skill-connector { opacity: 1; }
+.skill-connector-line { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; vector-effect: non-scaling-stroke; opacity: .8; }
+.skill-connector-ring-endpoint { fill: currentColor; vector-effect: non-scaling-stroke; }
+.skill-connector-endpoint { fill: currentColor; stroke: var(--surface); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.skill-chart[data-active-skill="c"] .skill-connector { color: var(--skill-color-c); }
+.skill-chart[data-active-skill="shell"] .skill-connector { color: var(--skill-color-shell); }
+.skill-chart[data-active-skill="linux"] .skill-connector { color: var(--skill-color-linux); }
+.skill-chart[data-active-skill="aosp"] .skill-connector { color: var(--skill-color-aosp); }
 .tech-list { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .tech { position: relative; display: flex; min-width: 0; min-height: 132px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 12px; color: var(--muted); text-align: center; overflow-wrap: anywhere; }
 .tech[data-tooltip]::after { content: attr(data-tooltip); position: absolute; bottom: calc(100% - 4px); left: 50%; z-index: 3; padding: 7px 10px; border: 1px solid var(--outline); border-radius: 7px; background: var(--surface); color: var(--on-surface); font-size: 12px; font-weight: 700; line-height: 1; white-space: nowrap; opacity: 0; pointer-events: none; transform: translate(-50%, 5px); transition: opacity .2s var(--ease), transform .2s var(--ease); }
@@ -376,6 +387,7 @@ h1 span { color: var(--primary); }
   .project-info h3 > .project-brand-icon.axionos-brand-icon { flex-basis: 36px; width: 36px; min-width: 36px; max-width: 36px; height: 36px; min-height: 36px; max-height: 36px; }
   .project-info p { font-size: 16px; }
   .project-info .tags { gap: 7px; margin-bottom: 18px; }
+  .card-chips { gap: 7px; margin-bottom: 18px; }
   .profile-placeholder { max-width: 300px; margin-inline: auto; }
   .bio { padding: 18px 0 18px 18px; }
   .bio p { font-size: 17px; }
@@ -387,11 +399,20 @@ h1 span { color: var(--primary); }
   .reveal { transform: translate3d(0, 16px, 0); filter: none; transition: opacity .45s var(--ease), transform .45s var(--ease); will-change: opacity, transform; transition-delay: 0ms; }
   .reveal.visible { filter: none; }
 }
+@media (max-width: 640px) {
+  .skill-chart { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 20px 16px; }
+  .skill-rings { width: min(100%, 240px); }
+  .skill-legend { width: 100%; }
+  .skill-legend-item { gap: 8px; padding: 12px 0; }
+  .skill-name { font-size: 13px; }
+}
 @media (max-width: 520px) {
   .tech-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .skill-chart { grid-template-columns: 1fr; gap: 18px; padding-bottom: 16px; }
+}
+@media (max-width: 340px) {
+  .skill-chart { grid-template-columns: 1fr; gap: 18px; padding: 24px; }
   .skill-rings { width: min(100%, 240px); }
-  .skill-legend-item { padding: 12px 0; }
+  .skill-legend-item { gap: 14px; }
 }
 @media (max-width: 1024px), (pointer: coarse) {
   .hero::before, .hero::after { display: none; animation: none; }

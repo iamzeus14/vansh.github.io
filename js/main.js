@@ -426,10 +426,173 @@ const initTypewriter = () => {
   });
 };
 
+const initSkillConnectors = () => {
+  const chart = document.querySelector('.skill-chart');
+  if (!chart) return;
+
+  const connector = chart.querySelector('.skill-connector');
+  const line = connector?.querySelector('.skill-connector-line');
+  const ringEndpoint = connector?.querySelector('.skill-connector-ring-endpoint');
+  const endpoint = connector?.querySelector('.skill-connector-endpoint');
+  if (!connector || !line || !ringEndpoint || !endpoint) return;
+
+  const skillLinks = [
+    ['c', '.skill-ring-c', '.skill-legend-c'],
+    ['shell', '.skill-ring-shell', '.skill-legend-shell'],
+    ['linux', '.skill-ring-linux', '.skill-legend-linux'],
+    ['aosp', '.skill-ring-aosp', '.skill-legend-aosp']
+  ].map(([name, ringSelector, legendSelector]) => ({
+    name,
+    ring: chart.querySelector(ringSelector),
+    legend: chart.querySelector(legendSelector)
+  })).filter(({ ring, legend }) => ring && legend);
+  let activeSkill;
+  let clearTimer;
+  let connectorFrame;
+
+  const updateConnector = () => {
+    if (!activeSkill) return;
+    const connectorRect = connector.getBoundingClientRect();
+    const targetRect = activeSkill.legend.querySelector('.skill-legend-swatch').getBoundingClientRect();
+    const ringMatrix = activeSkill.ring.getScreenCTM();
+    if (!ringMatrix) return;
+
+    const cx = activeSkill.ring.cx.baseVal.value;
+    const cy = activeSkill.ring.cy.baseVal.value;
+    const radius = activeSkill.ring.r.baseVal.value;
+    const toScreenPoint = (x, y) => ({
+      x: ringMatrix.a * x + ringMatrix.c * y + ringMatrix.e,
+      y: ringMatrix.b * x + ringMatrix.d * y + ringMatrix.f
+    });
+    const center = toScreenPoint(cx, cy);
+    const targetX = targetRect.left + targetRect.width / 2;
+    const targetY = targetRect.top + targetRect.height / 2;
+    const progressValue = Number.parseFloat(activeSkill.ring.style.getPropertyValue('--skill-progress'));
+    const finalProgress = Math.max(0, Math.min(100, Number.isFinite(progressValue) ? progressValue : 0));
+    const dashOffset = Number.parseFloat(getComputedStyle(activeSkill.ring).strokeDashoffset);
+    const progress = Math.max(0, Math.min(finalProgress, finalProgress - (Number.isFinite(dashOffset) ? dashOffset : 0))) / 100;
+    const startPoint = toScreenPoint(cx + radius, cy);
+    const endAngle = Math.PI * 2 * progress;
+    const endPoint = toScreenPoint(cx + Math.cos(endAngle) * radius, cy + Math.sin(endAngle) * radius);
+    const startAngle = Math.atan2(startPoint.y - center.y, startPoint.x - center.x);
+    const targetAngle = Math.atan2(targetY - center.y, targetX - center.x);
+    const angleFromStart = (targetAngle - startAngle + Math.PI * 2) % (Math.PI * 2);
+    let ringPointLocal;
+
+    if (angleFromStart <= endAngle) {
+      ringPointLocal = {
+        x: cx + Math.cos(angleFromStart) * radius,
+        y: cy + Math.sin(angleFromStart) * radius
+      };
+    } else {
+      const startDistance = Math.hypot(targetX - startPoint.x, targetY - startPoint.y);
+      const endDistance = Math.hypot(targetX - endPoint.x, targetY - endPoint.y);
+      ringPointLocal = startDistance <= endDistance
+        ? { x: cx + radius, y: cy }
+        : { x: cx + Math.cos(endAngle) * radius, y: cy + Math.sin(endAngle) * radius };
+    }
+
+    const targetLocal = new DOMPoint(targetX, targetY).matrixTransform(ringMatrix.inverse());
+    const outwardX = targetLocal.x - ringPointLocal.x;
+    const outwardY = targetLocal.y - ringPointLocal.y;
+    const outwardLength = Math.hypot(outwardX, outwardY);
+    const strokeWidth = Number.parseFloat(getComputedStyle(activeSkill.ring).strokeWidth);
+    const edgeOffset = (Number.isFinite(strokeWidth) ? strokeWidth : 0) / 2;
+    const ringPoint = toScreenPoint(
+      ringPointLocal.x + outwardX / (outwardLength || 1) * edgeOffset,
+      ringPointLocal.y + outwardY / (outwardLength || 1) * edgeOffset
+    );
+    const x1 = ringPoint.x - connectorRect.left;
+    const y1 = ringPoint.y - connectorRect.top;
+    const x2 = targetX - connectorRect.left;
+    const y2 = targetY - connectorRect.top;
+
+    connector.setAttribute('viewBox', `0 0 ${connectorRect.width} ${connectorRect.height}`);
+    const elbowX = x1 + (x2 - x1) * .68;
+    const horizontalDirection = Math.sign(x2 - x1);
+    const bendDirection = Math.sign(y2 - y1);
+    const cornerRadius = Math.min(8, Math.abs(x2 - elbowX) / 2, Math.abs(y2 - y1) / 2);
+    const path = horizontalDirection && bendDirection && cornerRadius >= 1
+      ? `M ${x1} ${y1} H ${elbowX - horizontalDirection * cornerRadius} Q ${elbowX} ${y1} ${elbowX} ${y1 + bendDirection * cornerRadius} V ${y2 - bendDirection * cornerRadius} Q ${elbowX} ${y2} ${elbowX + horizontalDirection * cornerRadius} ${y2} H ${x2}`
+      : `M ${x1} ${y1} L ${x2} ${y2}`;
+
+    line.setAttribute('d', path);
+    ringEndpoint.setAttribute('cx', String(x1));
+    ringEndpoint.setAttribute('cy', String(y1));
+    endpoint.setAttribute('cx', String(x2));
+    endpoint.setAttribute('cy', String(y2));
+
+    const ringIsAnimating = activeSkill.ring.getAnimations().some(animation => animation.playState === 'running');
+    if (ringIsAnimating && connectorFrame === undefined) {
+      connectorFrame = window.requestAnimationFrame(() => {
+        connectorFrame = undefined;
+        updateConnector();
+      });
+    } else if (!ringIsAnimating && connectorFrame !== undefined) {
+      window.cancelAnimationFrame(connectorFrame);
+      connectorFrame = undefined;
+    }
+  };
+
+  const activate = skill => {
+    window.clearTimeout(clearTimer);
+    activeSkill = skill;
+    chart.dataset.activeSkill = skill.name;
+    chart.classList.add('has-active-skill');
+    updateConnector();
+  };
+
+  const deactivate = () => {
+    activeSkill = undefined;
+    if (connectorFrame !== undefined) {
+      window.cancelAnimationFrame(connectorFrame);
+      connectorFrame = undefined;
+    }
+    delete chart.dataset.activeSkill;
+    chart.classList.remove('has-active-skill');
+  };
+
+  const clearIfInactive = () => {
+    clearTimer = window.setTimeout(() => {
+      const pointerInsideSkill = skillLinks.some(({ ring, legend }) => ring.matches(':hover') || legend.matches(':hover'));
+      const focusInsideSkill = skillLinks.some(({ ring, legend }) => ring === document.activeElement || legend === document.activeElement);
+      if (pointerInsideSkill || focusInsideSkill) return;
+      deactivate();
+    }, 80);
+  };
+
+  skillLinks.forEach(skill => {
+    [skill.ring, skill.legend].forEach(element => {
+      element.addEventListener('pointerenter', event => {
+        if (event.pointerType !== 'touch') activate(skill);
+      });
+      element.addEventListener('pointerleave', event => {
+        if (event.pointerType !== 'touch') clearIfInactive();
+      });
+      element.addEventListener('focus', () => activate(skill));
+      element.addEventListener('blur', clearIfInactive);
+      element.addEventListener('click', event => {
+        if (event.detail > 0 && window.matchMedia('(pointer: coarse)').matches) activate(skill);
+      });
+    });
+  });
+  chart.addEventListener('click', event => {
+    const target = event.target;
+    if (window.matchMedia('(pointer: coarse)').matches &&
+        (!(target instanceof Element) || !target.closest('.skill-ring-progress, .skill-legend-item'))) {
+      window.clearTimeout(clearTimer);
+      deactivate();
+    }
+  });
+  window.addEventListener('resize', updateConnector, { passive: true });
+  if ('ResizeObserver' in window) new ResizeObserver(updateConnector).observe(chart);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initAmbientCollision();
   initCursorCat();
   initTypewriter();
+  initSkillConnectors();
   const preloader = document.querySelector('.preloader');
   window.setTimeout(() => preloader?.classList.add('done'), 450);
 

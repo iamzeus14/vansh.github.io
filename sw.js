@@ -1,8 +1,8 @@
-const CACHE_NAME = 'vansh-shell-v7';
+const CACHE_NAME = 'vansh-shell-v12';
 const APP_SHELL = [
   './',
   './index.html',
-  './css/style.css?v=20261010-1',
+  './css/style.css?v=20261010-5',
   './js/main.js',
   './manifest.webmanifest',
   './assets/zeus.jpg'
