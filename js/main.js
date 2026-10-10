@@ -492,15 +492,11 @@ const initSkillConnectors = () => {
         : { x: cx + Math.cos(endAngle) * radius, y: cy + Math.sin(endAngle) * radius };
     }
 
-    const targetLocal = new DOMPoint(targetX, targetY).matrixTransform(ringMatrix.inverse());
-    const outwardX = targetLocal.x - ringPointLocal.x;
-    const outwardY = targetLocal.y - ringPointLocal.y;
-    const outwardLength = Math.hypot(outwardX, outwardY);
     const strokeWidth = Number.parseFloat(getComputedStyle(activeSkill.ring).strokeWidth);
     const edgeOffset = (Number.isFinite(strokeWidth) ? strokeWidth : 0) / 2;
     const ringPoint = toScreenPoint(
-      ringPointLocal.x + outwardX / (outwardLength || 1) * edgeOffset,
-      ringPointLocal.y + outwardY / (outwardLength || 1) * edgeOffset
+      cx + (ringPointLocal.x - cx) / radius * (radius + edgeOffset),
+      cy + (ringPointLocal.y - cy) / radius * (radius + edgeOffset)
     );
     const x1 = ringPoint.x - connectorRect.left;
     const y1 = ringPoint.y - connectorRect.top;
@@ -508,13 +504,36 @@ const initSkillConnectors = () => {
     const y2 = targetY - connectorRect.top;
 
     connector.setAttribute('viewBox', `0 0 ${connectorRect.width} ${connectorRect.height}`);
-    const elbowX = x1 + (x2 - x1) * .68;
+    const ringsRect = chart.querySelector('.skill-rings').getBoundingClientRect();
+    const legendIsBelowRing = targetRect.top >= ringsRect.bottom;
     const horizontalDirection = Math.sign(x2 - x1);
     const bendDirection = Math.sign(y2 - y1);
-    const cornerRadius = Math.min(8, Math.abs(x2 - elbowX) / 2, Math.abs(y2 - y1) / 2);
-    const path = horizontalDirection && bendDirection && cornerRadius >= 1
-      ? `M ${x1} ${y1} H ${elbowX - horizontalDirection * cornerRadius} Q ${elbowX} ${y1} ${elbowX} ${y1 + bendDirection * cornerRadius} V ${y2 - bendDirection * cornerRadius} Q ${elbowX} ${y2} ${elbowX + horizontalDirection * cornerRadius} ${y2} H ${x2}`
-      : `M ${x1} ${y1} L ${x2} ${y2}`;
+    const elbowX = x1 + (x2 - x1) * .68;
+    let path;
+
+    if (legendIsBelowRing) {
+      const centerX = center.x - connectorRect.left;
+      const centerY = center.y - connectorRect.top;
+      const outerRadius = Math.hypot(x1 - centerX, y1 - centerY);
+      const startAngle = Math.atan2(y1 - centerY, x1 - centerX);
+      const bottomAngle = Math.PI / 2;
+      const clockwiseSweep = (bottomAngle - startAngle + Math.PI * 2) % (Math.PI * 2);
+      const sweepDirection = clockwiseSweep <= Math.PI ? 1 : 0;
+      const bottomX = centerX;
+      const bottomY = centerY + outerRadius;
+      const railX = Math.max(2, x2 - 14);
+      const railY = ringsRect.bottom - connectorRect.top + 9;
+      const cornerRadius = Math.min(5, Math.max(0, railY - bottomY) / 2, (bottomX - railX) / 2, (y2 - railY) / 2);
+
+      path = cornerRadius >= 1 && y2 > railY && bottomX > railX
+        ? `M ${x1} ${y1} A ${outerRadius} ${outerRadius} 0 0 ${sweepDirection} ${bottomX} ${bottomY} V ${railY - cornerRadius} Q ${bottomX} ${railY} ${bottomX - cornerRadius} ${railY} H ${railX + cornerRadius} Q ${railX} ${railY} ${railX} ${railY + cornerRadius} V ${y2 - cornerRadius} Q ${railX} ${y2} ${railX + cornerRadius} ${y2} H ${x2}`
+        : `M ${x1} ${y1} V ${y2}`;
+    } else {
+      const cornerRadius = Math.min(8, Math.abs(x2 - elbowX) / 2, Math.abs(y2 - y1) / 2);
+      path = !horizontalDirection || !bendDirection || cornerRadius < 1
+        ? `M ${x1} ${y1} L ${x2} ${y2}`
+        : `M ${x1} ${y1} H ${elbowX - horizontalDirection * cornerRadius} Q ${elbowX} ${y1} ${elbowX} ${y1 + bendDirection * cornerRadius} V ${y2 - bendDirection * cornerRadius} Q ${elbowX} ${y2} ${elbowX + horizontalDirection * cornerRadius} ${y2} H ${x2}`;
+    }
 
     line.setAttribute('d', path);
     ringEndpoint.setAttribute('cx', String(x1));
@@ -572,7 +591,7 @@ const initSkillConnectors = () => {
       element.addEventListener('focus', () => activate(skill));
       element.addEventListener('blur', clearIfInactive);
       element.addEventListener('click', event => {
-        if (event.detail > 0 && window.matchMedia('(pointer: coarse)').matches) activate(skill);
+        if (event.detail > 0) activate(skill);
       });
     });
   });
