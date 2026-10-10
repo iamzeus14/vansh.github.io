@@ -188,7 +188,7 @@ h1 span { color: var(--primary); }
 .skill-rings-graphic { display: block; width: 100%; height: auto; overflow: visible; }
 .skill-ring-progress { fill: none; stroke-width: 14; }
 .skill-ring-progress { stroke: currentColor; stroke-dasharray: var(--skill-progress) 100; stroke-dashoffset: 0; stroke-linecap: round; }
-.skill-ring-progress { cursor: crosshair; pointer-events: stroke; }
+.skill-ring-progress { cursor: crosshair; outline: none; pointer-events: stroke; -webkit-tap-highlight-color: transparent; }
 .skill-chart.visible .skill-ring-progress { animation: skill-ring-draw 1.6s cubic-bezier(.22, 1, .36, 1) var(--ring-delay, 0ms) both; }
 .skill-chart.visible .skill-ring-c { --ring-delay: 0ms; }
 .skill-chart.visible .skill-ring-shell { --ring-delay: 80ms; }
